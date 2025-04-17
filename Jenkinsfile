@@ -12,7 +12,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', credentialsId: 'village1031', url: 'git@github.com:ChaGyoungtae/be13-fin-2team-1.git'
+                git branch: 'develop', credentialsId: 'village1031', url: 'git@github.com:ChaGyoungtae/be13-fin-2team-1.git'
             }
         }
 
