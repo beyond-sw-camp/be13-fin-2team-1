@@ -2,17 +2,23 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = 'village1031/schocolla-api' // Docker Hub에 저장할 이미지 이름
-        DOCKER_CREDENTIALS_ID = 'docker-access' // Docker Hub 자격 증명 ID
-        EC2_IP = '52.78.55.230' // EC2 인스턴스 IP 주소
-        EC2_USER = 'ec2-user' // EC2 인스턴스 사용자 ex ubuntu
-        CONTAINER_NAME = 'schocollaContaioner' // 컨테이너 이름 ex springContainer
+        DOCKER_IMAGE_NAME = 'village1031/schocolla-api'
+        DOCKER_CREDENTIALS_ID = 'docker-access'
+        EC2_IP = '52.78.55.230'
+        EC2_USER = 'ec2-user'
+        CONTAINER_NAME = 'schocollaContaioner'
     }
 
     stages {
         stage('Checkout') {
             steps {
                 git branch: 'develop', credentialsId: 'github-token', url: 'git@github.com:beyond-sw-camp/be13-fin-2team-1.git'
+            }
+        }
+
+        stage('Build JAR') {
+            steps {
+                sh './gradlew clean build'
             }
         }
 
@@ -37,14 +43,14 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent (credentials: ['github-access-key']) { // 'aws_key'는 Jenkins에 저장된 SSH 자격 증명 ID
+                sshagent (credentials: ['github-access-key']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} << 'EOF'
                         sudo docker pull ${DOCKER_IMAGE_NAME}:latest
                         sudo docker stop ${CONTAINER_NAME} || true
                         sudo docker rm ${CONTAINER_NAME} || true
                         sudo docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${DOCKER_IMAGE_NAME}:latest
-                        
+
                         IMAGES=\$(sudo docker images -f 'dangling=true' -q)
                         if [ -n "\$IMAGES" ]; then
                             sudo docker rmi -f \$IMAGES
