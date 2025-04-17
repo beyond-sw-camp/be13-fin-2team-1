@@ -20,8 +20,7 @@ pipeline {
             steps {
                 sh 'chmod +x ./gradlew'
                 sh './gradlew build'
-                sh 'cd build/libs'
-                sh 'ls -al'
+                sh 'ls -al ./build/libs'
             }
         }
 
