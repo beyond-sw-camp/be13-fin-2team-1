@@ -25,7 +25,7 @@ public class RegistrationController {
     @GetMapping("/{member-id}")
     public ResponseEntity<List<RegistrationResponseDto>> findByPlaceId(@PathVariable("member-id") Long memberId) {
         List<RegistrationResponseDto> registrationResponseDtos = registrationService.findByMemberId(memberId);
-
+        System.out.println("hello");
         return ResponseEntity.ok().body(registrationResponseDtos);
 
     }
