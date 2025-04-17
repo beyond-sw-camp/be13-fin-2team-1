@@ -45,7 +45,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent (credentials: ['github-access-key']) {
+                sshagent (credentials: ['ec2-access-key']) {
                     sh """
                     ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} << 'EOF'
                         sudo docker pull ${DOCKER_IMAGE_NAME}:latest
