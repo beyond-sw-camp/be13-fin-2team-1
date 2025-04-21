@@ -2,11 +2,11 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE_NAME = 'village1031/schocolla-api'
+        DOCKER_IMAGE_NAME = 'village1031/gandalp-api'
         DOCKER_CREDENTIALS_ID = 'docker-access'
-        EC2_IP = '52.78.55.230'
+        EC2_IP = '15.164.100.123'
         EC2_USER = 'ec2-user'
-        CONTAINER_NAME = 'schocollaContaioner'
+        CONTAINER_NAME = 'gandalpContaioner'
     }
 
     stages {
