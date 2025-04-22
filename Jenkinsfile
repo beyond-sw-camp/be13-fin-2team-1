@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_IMAGE_NAME = 'village1031/gandalp-api'
         DOCKER_CREDENTIALS_ID = 'docker-access'
-        EC2_IP = '15.164.100.123'
+        EC2_IP = '13.209.96.152'
         EC2_USER = 'ec2-user'
         CONTAINER_NAME = 'gandalpContaioner'
     }
