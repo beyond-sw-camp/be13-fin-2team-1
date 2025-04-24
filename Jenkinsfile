@@ -42,28 +42,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to EC2') {
-            steps {
-                sshagent (credentials: ['ec2-access-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_IP} << 'EOF'
-                        sudo docker pull ${DOCKER_IMAGE_NAME}:latest
-                        sudo docker stop ${CONTAINER_NAME} || true
-                        sudo docker rm ${CONTAINER_NAME} || true
-                        sudo docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${DOCKER_IMAGE_NAME}:latest
-
-                        IMAGES=\$(sudo docker images -f 'dangling=true' -q)
-                        if [ -n "\$IMAGES" ]; then
-                            sudo docker rmi -f \$IMAGES
-                        else
-                            echo "No dangling images to remove."
-                        fi
-EOF
-                    """
-                }
-            }
-        }
     }
 
     post {

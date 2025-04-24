@@ -15,7 +15,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         // Server server = new Server().url("https://bucams-api.com:30804");
         // Server server = new Server().url("http://gyoungtae.iptime.org:31000");
-        Server server = new Server().url("https://api.gandalp-service.com");
+        Server server = new Server().url("http:/13.209.96.152:8080");
         return new OpenAPI()
             .addServersItem(server)
             .info(new Info()
