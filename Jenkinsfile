@@ -47,14 +47,12 @@ pipeline {
 
         stage('Trigger ASG Rolling Update') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
-                    sh """
-                    aws autoscaling start-instance-refresh \
-                    --auto-scaling-group-name $ASG_NAME \
-                    --region $AWS_REGION \
-                    --strategy Rolling
-                    """
-                }
+                sh """
+                aws autoscaling start-instance-refresh \
+                --auto-scaling-group-name $ASG_NAME \
+                --region $AWS_REGION \
+                --strategy Rolling
+                """
             }
         }
     }
