@@ -37,7 +37,7 @@
 
 
 ### 📃 요구사항 명세서 
-<img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/c5622463-5658-4542-91ad-f776ec20f15e" />
+<img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/7279a608-daf0-449c-ae4c-0bfdfb1036b0" />
 
 <br>
 
