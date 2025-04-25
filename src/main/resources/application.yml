@@ -18,6 +18,16 @@ spring:
     init:
       mode: never
 
+  springdoc:  # 🔥 여기를 spring 블록 안에 넣어야 해!
+    api-docs:
+      enabled: true
+    swagger-ui:
+      disable-swagger-default-url: true
+      display-request-duration: true
+    default-produces-media-type: application/json
+    default-consumes-media-type: application/json
+    server-url: https://api.gandalp-service.com
+
 management:   # <-- spring 바깥에 위치해야 함!!
   server:
     port: 8080

@@ -11,11 +11,15 @@ import io.swagger.v3.oas.models.info.Info;
 @Configuration
 @RequiredArgsConstructor
 public class SwaggerConfig {
+
+    @Value("${springdoc.server-url}")
+    private String serverUrl;
+
     @Bean
     public OpenAPI customOpenAPI() {
         // Server server = new Server().url("https://bucams-api.com:30804");
         // Server server = new Server().url("http://gyoungtae.iptime.org:31000");
-        Server server = new Server().url("https://api.gandalp-service.com");
+        Server server = new Server().url(new Server().url(serverUrl));
         return new OpenAPI()
             .addServersItem(server)
             .info(new Info()
