@@ -3,6 +3,7 @@ package com.bucams.bucams.config.swagger;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,7 +20,7 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         // Server server = new Server().url("https://bucams-api.com:30804");
         // Server server = new Server().url("http://gyoungtae.iptime.org:31000");
-        Server server = new Server().url(new Server().url(serverUrl));
+        Server server = new Server().url(serverUrl);
         return new OpenAPI()
             .addServersItem(server)
             .info(new Info()
