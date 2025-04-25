@@ -29,15 +29,21 @@
     - 어느 시간대에 응급환자가 몰리는지 확인하여 그 시간대에 인원 보충 등을 계획할 수 있다.
 <br>
 
+<details>
+    <summary>
+        📃 프로젝트 기획서
+    </summary>
+    https://github.com/user-attachments/files/19900938/_.pdf
+</details>
 
-### 📃 프로젝트 기획서
-[프로젝트_기획서.pdf](https://github.com/user-attachments/files/19900938/_.pdf)
+<details>
+    <summary>
+        📃 요구사항 명세서 
+    </summary>
+    <img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/7279a608-daf0-449c-ae4c-0bfdfb1036b0" />
+</details>
 
-<br>
 
-
-### 📃 요구사항 명세서 
-<img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/7279a608-daf0-449c-ae4c-0bfdfb1036b0" />
 
 <br>
 
@@ -97,14 +103,28 @@
 ---
 
 ## 🏗️ 4. Backend
-📊 ERD  
-📋 테이블 정의 명세서  
-📡 API 명세서  
+<details>
+<summary>📊 ERD</summary>
+</details>
+    
+<details>
+<summary>📋 테이블 정의 명세서</summary>
+https://docs.google.com/spreadsheets/d/1F4ceqJwuPZzXLIOu3IjL5Qlj_13gn2_dcEDAObE9p_Q/edit?gid=0#gid=0
+</details>
+
+<details>
+<summary>📡 API 명세서</summary>
+</details>
+  
 
 ---
 
 ## 🖼️ 5. Frontend
-📄 페이지별 구성도
+
+<details>
+<summary>📄 페이지별 구성도</summary>
+</details>
+
 
 ---
 
