@@ -7,6 +7,8 @@ pipeline {
         EC2_IP = '13.209.96.152'
         EC2_USER = 'ec2-user'
         CONTAINER_NAME = 'gandalpContaioner'
+        AWS_REGION = 'ap-northeast-2'
+        ASG_NAME = 'gandalp-asg'
     }
 
     stages {
@@ -39,6 +41,19 @@ pipeline {
                         dockerImage.push("${env.BUILD_NUMBER}")
                         dockerImage.push('latest')
                     }
+                }
+            }
+        }
+
+        stage('Trigger ASG Rolling Update') {
+            steps {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials']]) {
+                    sh """
+                    aws autoscaling start-instance-refresh \
+                    --auto-scaling-group-name $ASG_NAME \
+                    --region $AWS_REGION \
+                    --strategy Rolling
+                    """
                 }
             }
         }
