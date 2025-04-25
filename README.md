@@ -105,6 +105,8 @@
 ## 🏗️ 4. Backend
 <details>
 <summary>📊 ERD</summary>
+    <img width="1202" alt="ERD" src="https://media.discordapp.net/attachments/1357157783417393215/1365152462473920522/image.png?ex=680c44ce&is=680af34e&hm=4f1ec4d26410d9d59f3bb5e2bd76cdc4d51de3456a7ab0c8e4db1edb9ae7c4d2&=&format=webp&quality=lossless&width=1340&height=454" />
+    
 </details>
     
 <details>
@@ -114,6 +116,8 @@ https://docs.google.com/spreadsheets/d/1F4ceqJwuPZzXLIOu3IjL5Qlj_13gn2_dcEDAObE9
 
 <details>
 <summary>📡 API 명세서</summary>
+    <img width="1202" alt="API 명세서" src="https://github.com/user-attachments/assets/f8c01ad5-7b8a-427c-8484-54a3c1ac4787" />
+    [API 명세서](https://github.com/user-attachments/files/19901816/API.pdf)
 </details>
   
 
