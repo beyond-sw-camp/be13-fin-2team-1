@@ -33,13 +33,14 @@
     <summary>
         📃 프로젝트 기획서
     </summary>
-    https://github.com/user-attachments/files/19900938/_.pdf
+    [프로젝트 기획서 링크] : https://github.com/user-attachments/files/19900938/_.pdf
 </details>
 
 <details>
     <summary>
         📃 요구사항 명세서 
     </summary>
+    [요구사항 명세서 링크] : https://docs.google.com/spreadsheets/d/1oZ8sPGTxzx7KevyKRMbxTwBhiA-tFPZ5Z_FOTktWzpQ/edit?gid=0#gid=0
     <img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/7279a608-daf0-449c-ae4c-0bfdfb1036b0" />
 </details>
 
