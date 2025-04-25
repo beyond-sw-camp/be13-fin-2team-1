@@ -1,7 +1,7 @@
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://13.209.96.152:3306/gandalp_db
+    url: jdbc:mariadb://gandalp-alb-812230836.ap-northeast-2.elb.amazonaws.com:3306/gandalp_db
 #    url: jdbc:mariadb://localhost:3306/web
     username: root
     password: 'root'
