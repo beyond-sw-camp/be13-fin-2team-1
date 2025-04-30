@@ -41,7 +41,7 @@
         📃 요구사항 명세서 
     </summary>
     [요구사항 명세서 링크] : https://docs.google.com/spreadsheets/d/1oZ8sPGTxzx7KevyKRMbxTwBhiA-tFPZ5Z_FOTktWzpQ/edit?gid=0#gid=0
-    <img width="1202" alt="요구사항 정의서" src="https://github.com/user-attachments/assets/7279a608-daf0-449c-ae4c-0bfdfb1036b0" />
+
 </details>
 
 
@@ -106,8 +106,9 @@
 ## 🏗️ 4. Backend
 <details>
 <summary>📊 ERD</summary>
-    <img width="1202" alt="ERD" src="https://media.discordapp.net/attachments/1357157783417393215/1365152462473920522/image.png?ex=680c44ce&is=680af34e&hm=4f1ec4d26410d9d59f3bb5e2bd76cdc4d51de3456a7ab0c8e4db1edb9ae7c4d2&=&format=webp&quality=lossless&width=1340&height=454" />
-    
+    <img width="1202" alt="ERD" src="https://github.com/user-attachments/assets/6135a3a1-28fc-4b42-aac5-7f9ef19044e7" />
+    [erd 링크]https://www.erdcloud.com/d/Z9BYrMFpqtPAqdiM4
+
 </details>
     
 <details>
@@ -118,7 +119,6 @@ https://docs.google.com/spreadsheets/d/1F4ceqJwuPZzXLIOu3IjL5Qlj_13gn2_dcEDAObE9
 <details>
 <summary>📡 API 명세서</summary>
     <img width="1202" alt="API 명세서" src="https://github.com/user-attachments/assets/f8c01ad5-7b8a-427c-8484-54a3c1ac4787" />
-    [API 명세서](https://github.com/user-attachments/files/19901816/API.pdf)
 </details>
   
 
@@ -144,7 +144,7 @@ Jenkins + Docker 기반 자동 배포 구성
 ---
 
 ## 🗂️ 8. WBS
-역할 분담 및 일정 관리
+[WBS 링크](https://docs.google.com/spreadsheets/d/1MOykkjoHG5tIhQhpYJZ3UK5iLq_teeQv8LXvKvmIpg0/edit?usp=sharing)
 
 ---
 
