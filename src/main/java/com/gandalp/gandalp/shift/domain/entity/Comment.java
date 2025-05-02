@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.shift.domain.entity;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.member.domain.entity.Member;
 
 import jakarta.persistence.Column;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comment {
+public class Comment extends BaseEntity {
 
 
 	@Id

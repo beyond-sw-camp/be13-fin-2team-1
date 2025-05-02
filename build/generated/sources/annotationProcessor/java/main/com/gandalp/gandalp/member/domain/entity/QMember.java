@@ -22,17 +22,25 @@ public class QMember extends EntityPathBase<Member> {
 
     public static final QMember member = new QMember("member1");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
     public final StringPath accountId = createString("accountId");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final com.gandalp.gandalp.hospital.domain.entity.QDepartment department;
 
-    public final NumberPath<Long> id = createNumber("id", Long.class);
+    public final com.gandalp.gandalp.hospital.domain.entity.QHospital hospital;
 
-    public final StringPath name = createString("name");
+    public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final StringPath password = createString("password");
 
     public final EnumPath<Type> type = createEnum("type", Type.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
     public QMember(String variable) {
         this(Member.class, forVariable(variable), INITS);
@@ -53,6 +61,7 @@ public class QMember extends EntityPathBase<Member> {
     public QMember(Class<? extends Member> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.department = inits.isInitialized("department") ? new com.gandalp.gandalp.hospital.domain.entity.QDepartment(forProperty("department"), inits.get("department")) : null;
+        this.hospital = inits.isInitialized("hospital") ? new com.gandalp.gandalp.hospital.domain.entity.QHospital(forProperty("hospital")) : null;
     }
 
 }

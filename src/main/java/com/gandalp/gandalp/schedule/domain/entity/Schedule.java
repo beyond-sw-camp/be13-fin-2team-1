@@ -2,6 +2,7 @@ package com.gandalp.gandalp.schedule.domain.entity;
 
 import java.time.LocalDateTime;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Room;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
 
@@ -25,15 +26,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Schedule {
+public class Schedule extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "schedule-id")
 	private Long id;
-
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "room-id")
-	private Room room;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "nurse-id")
@@ -51,6 +48,5 @@ public class Schedule {
 
 	@Column(nullable = false)
 	private LocalDateTime endTime;
-
 
 }

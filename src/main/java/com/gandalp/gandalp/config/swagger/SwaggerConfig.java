@@ -1,6 +1,9 @@
 package com.gandalp.gandalp.config.swagger;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import io.swagger.v3.oas.models.servers.Server;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,14 +20,18 @@ public class SwaggerConfig {
     private String serverUrl;
 
     @Bean
-    public OpenAPI customOpenAPI() {
-        Server server = new Server().url(serverUrl);
-
+    public OpenAPI openAPI() {
         return new OpenAPI()
-            .addServersItem(server)
-            .info(new Info()
-                .title("Gandalp RESTful API Documentation")
-                .version("1.0")
-                .description("API 명세서"));
+                .components(new Components()
+                        .addSecuritySchemes("BearerAuth", new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                                .in(SecurityScheme.In.HEADER)
+                                .name("Authorization")
+                        )
+                )
+                .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
+                .info(new Info().title("API 제목").version("v1.0.0"));
     }
 }

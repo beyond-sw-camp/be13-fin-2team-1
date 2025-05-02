@@ -22,19 +22,25 @@ public class QBoard extends EntityPathBase<Board> {
 
     public static final QBoard board = new QBoard("board");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
     public final EnumPath<BoardStatus> boardStatus = createEnum("boardStatus", BoardStatus.class);
 
     public final ListPath<Comment, QComment> comments = this.<Comment, QComment>createList("comments", Comment.class, QComment.class, PathInits.DIRECT2);
 
     public final StringPath content = createString("content");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final com.gandalp.gandalp.hospital.domain.entity.QDepartment department;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final com.gandalp.gandalp.member.domain.entity.QMember member;
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
     public QBoard(String variable) {
         this(Board.class, forVariable(variable), INITS);

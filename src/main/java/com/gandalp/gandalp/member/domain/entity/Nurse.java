@@ -2,6 +2,8 @@ package com.gandalp.gandalp.member.domain.entity;
 
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 
+import com.gandalp.gandalp.member.domain.dto.NurseUpdateDto;
+import com.gandalp.gandalp.schedule.domain.entity.SurgerySchedule;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -21,8 +23,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Nurse {
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
+
+	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "nurse-id")
 	private Long id;
 
@@ -31,19 +33,19 @@ public class Nurse {
 	private Department department;
 
 	@Column(nullable = false, length = 50)
+	private String name;
+
+	@Column(nullable = false, length = 50)
 	private String email;
 
-	@Column(nullable = false, length = 10)
+	@Column(nullable = false)
 	private String password;
 
 	private Status workingStatus;
 
-	@Column(nullable = false)
-	private int workingCount = 0;
-
-	@Column(nullable = false)
-	private int surgeryCount = 0;
-
-	@Column(nullable = false)
-	private int offCount = 0;
+	public void update(NurseUpdateDto updateDto){
+		this.name = updateDto.getName();
+		this.email = updateDto.getEmail();
+		this.password = updateDto.getPassword();
+	}
 }
