@@ -1,8 +1,11 @@
 package com.gandalp.gandalp.member.domain.entity;
 
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 
+import com.gandalp.gandalp.hospital.domain.entity.Hospital;
+import com.gandalp.gandalp.member.domain.dto.MemberUpdateDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -23,26 +26,32 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Member {
+public class Member extends BaseEntity {
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "member-id")
 	private Long id;
+
+	///  병원추가
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "hospital-id")
+	private Hospital hospital;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "department-id")
 	private Department department;
 
 	@Column(nullable = false, length = 50)
-	private String name;
-
-	@Column(nullable = false, length = 50)
 	private String accountId;
 
-	@Column(nullable = false, length = 50)
+	@Column(nullable = false)
 	private String password;
 
-	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private Type type;
+
+	public void update(MemberUpdateDto updateDto){
+		this.accountId = updateDto.getAccountId();
+		this.password = updateDto.getPassword();
+	}
 }

@@ -28,13 +28,9 @@ public class QNurse extends EntityPathBase<Nurse> {
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
-    public final NumberPath<Integer> offCount = createNumber("offCount", Integer.class);
+    public final StringPath name = createString("name");
 
     public final StringPath password = createString("password");
-
-    public final NumberPath<Integer> surgeryCount = createNumber("surgeryCount", Integer.class);
-
-    public final NumberPath<Integer> workingCount = createNumber("workingCount", Integer.class);
 
     public final EnumPath<Status> workingStatus = createEnum("workingStatus", Status.class);
 

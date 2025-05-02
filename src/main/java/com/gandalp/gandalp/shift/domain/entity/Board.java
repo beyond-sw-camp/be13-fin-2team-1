@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.entity.Member;
 
@@ -29,7 +30,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Board {
+public class Board extends BaseEntity {
 
 
 	@Id
@@ -51,10 +52,6 @@ public class Board {
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
 	private BoardStatus boardStatus;
-
-
-	@Column(nullable = false)
-	private LocalDateTime createdAt;
 
 	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Comment> comments = new ArrayList<>();

@@ -22,9 +22,14 @@ public class QSchedule extends EntityPathBase<Schedule> {
 
     public static final QSchedule schedule = new QSchedule("schedule");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
     public final EnumPath<Category> category = createEnum("category", Category.class);
 
     public final StringPath content = createString("content");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     public final DateTimePath<java.time.LocalDateTime> endTime = createDateTime("endTime", java.time.LocalDateTime.class);
 
@@ -32,9 +37,10 @@ public class QSchedule extends EntityPathBase<Schedule> {
 
     public final com.gandalp.gandalp.member.domain.entity.QNurse nurse;
 
-    public final com.gandalp.gandalp.hospital.domain.entity.QRoom room;
-
     public final DateTimePath<java.time.LocalDateTime> startTime = createDateTime("startTime", java.time.LocalDateTime.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
     public QSchedule(String variable) {
         this(Schedule.class, forVariable(variable), INITS);
@@ -55,7 +61,6 @@ public class QSchedule extends EntityPathBase<Schedule> {
     public QSchedule(Class<? extends Schedule> type, PathMetadata metadata, PathInits inits) {
         super(type, metadata, inits);
         this.nurse = inits.isInitialized("nurse") ? new com.gandalp.gandalp.member.domain.entity.QNurse(forProperty("nurse"), inits.get("nurse")) : null;
-        this.room = inits.isInitialized("room") ? new com.gandalp.gandalp.hospital.domain.entity.QRoom(forProperty("room")) : null;
     }
 
 }
