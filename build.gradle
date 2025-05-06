@@ -61,6 +61,14 @@ dependencies {
 
 	// 액추에이터
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	// open ai
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	implementation 'org.springframework.boot:spring-boot-starter-json'
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation 'org.apache.httpcomponents:httpclient:4.5.13' // HTTP 요청용
+
 }
 
 tasks.named('test') {
