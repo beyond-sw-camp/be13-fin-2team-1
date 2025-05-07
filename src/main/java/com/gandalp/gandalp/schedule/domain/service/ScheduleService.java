@@ -8,6 +8,7 @@ import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
 import com.gandalp.gandalp.schedule.domain.entity.Category;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
+import com.gandalp.gandalp.schedule.domain.entity.TempCategory;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleTempRepository;
 import lombok.RequiredArgsConstructor;
@@ -38,7 +39,7 @@ public class ScheduleService {
 
             scheduleTemp = ScheduleTemp.builder()
                                 .nurse(nurse.get())
-                                .category(Category.WAITING_OFF)
+                                .category(TempCategory.WAITING_OFF)
                                 .content(scheduleRequestDto.getContent())
                                 .startTime(scheduleRequestDto.getStartTime())
                                 .endTime(scheduleRequestDto.getEndTime())
@@ -60,7 +61,11 @@ public class ScheduleService {
 
 
     public NurseResponseDto checkPassword(String password, String email) {
-        Optional<Nurse> nurse = nurseRepository.findByPasswordAndEmail(password, email);
+
+
+        // Optional<Nurse> nurse = nurseRepository.findByPasswordAndEmail(password, email);
+        Optional<Nurse> nurse = nurseRepository.findByEmail(email);
+
         NurseResponseDto nurseResponseDto = null;
         if (nurse.isPresent() && passwordEncoder.matches(password, nurse.get().getPassword())) {
             nurseResponseDto = NurseResponseDto.builder()

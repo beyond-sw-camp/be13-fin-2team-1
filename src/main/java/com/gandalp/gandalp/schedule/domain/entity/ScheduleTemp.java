@@ -40,7 +40,7 @@ public class ScheduleTemp extends BaseEntity {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    private Category category;
+    private TempCategory category;
 
     @Column(nullable = false, length = 100)
     private String content;
