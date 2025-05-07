@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Getter
@@ -50,4 +51,19 @@ public class ScheduleTemp extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDateTime endTime;
+
+    // ✨ 빌더 내부에서 시(hour) 단위로 절삭
+    @Builder
+    public ScheduleTemp(Nurse nurse, TempCategory category, String content,
+                        LocalDateTime startTime, LocalDateTime endTime) {
+        this.nurse = nurse;
+        this.category = category;
+        this.content = content;
+        this.startTime = startTime != null ? startTime.truncatedTo(ChronoUnit.HOURS) : null;
+        this.endTime = endTime != null ? endTime.truncatedTo(ChronoUnit.HOURS) : null;
+    }
+
+    public void acceptedOff(){
+        this.category = TempCategory.PROCESSED_OFF;
+    }
 }
