@@ -1,17 +1,27 @@
 package com.gandalp.gandalp.schedule;
 
+import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
+import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
+import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleRequestDto;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleResponseDto;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
+import com.gandalp.gandalp.schedule.domain.dto.SurgeryScheduleResponseDto;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
+import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.service.ScheduleService;
+import com.gandalp.gandalp.schedule.domain.service.SurgeryScheduleService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.hibernate.action.internal.EntityActionVetoException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +33,7 @@ import java.util.Optional;
 public class ScheduleController {
 
     private final ScheduleService scheduleService;
+    private final SurgeryScheduleService surgeryScheduleService;
 
     @PostMapping("/off")
     public ResponseEntity<OffScheduleTempResponseDto> createOffSchedule(@RequestBody OffScheduleRequestDto scheduleRequestDto) {
@@ -82,6 +93,30 @@ public class ScheduleController {
         }
         return ResponseEntity.ok().body(nurseResponseDto);
     }
+
+
+    // 수술 일정 조회
+    @Operation(summary = "수술 일정 조회", description = "수간호사와 간호사가 수술 일정을 조회 가능")
+    @GetMapping("/surgery")
+    public ResponseEntity<List<SurgeryScheduleResponseDto>> getAllSurgerySchdule(Authentication auth){
+
+        CustomUserDetails userDetails = (CustomUserDetails)auth.getPrincipal();
+        Member member = userDetails.getMember();
+
+        if (member == null){
+            throw new EntityNotFoundException("로그인을 해주세요");
+        }
+
+        Department department = member.getDepartment();
+
+        List<SurgeryScheduleResponseDto> surgerySchedules = surgeryScheduleService.getAllSurgerySchedule(department.getId());
+
+
+        return ResponseEntity.ok(surgerySchedules);
+    }
+
+
+
 
 
 }

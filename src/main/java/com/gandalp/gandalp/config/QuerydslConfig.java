@@ -1,4 +1,4 @@
-package com.gandalp.gandalp.config.swagger;
+package com.gandalp.gandalp.config;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;

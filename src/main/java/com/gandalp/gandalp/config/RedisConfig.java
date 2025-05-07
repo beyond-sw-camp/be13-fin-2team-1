@@ -1,4 +1,4 @@
-package com.gandalp.gandalp.config.swagger;
+package com.gandalp.gandalp.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
