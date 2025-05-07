@@ -1,6 +1,7 @@
 package com.gandalp.gandalp.schedule.domain.dto;
 
 import com.gandalp.gandalp.schedule.domain.entity.Category;
+import com.gandalp.gandalp.schedule.domain.entity.TempCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,7 +17,7 @@ public class OffScheduleTempResponseDto {
 
     private final String nurseName;
 
-    private final Category category;
+    private final TempCategory category;
 
     private final String content;
 

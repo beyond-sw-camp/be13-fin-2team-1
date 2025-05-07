@@ -24,7 +24,7 @@ public class QScheduleTemp extends EntityPathBase<ScheduleTemp> {
 
     public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
 
-    public final EnumPath<Category> category = createEnum("category", Category.class);
+    public final EnumPath<TempCategory> category = createEnum("category", TempCategory.class);
 
     public final StringPath content = createString("content");
 
