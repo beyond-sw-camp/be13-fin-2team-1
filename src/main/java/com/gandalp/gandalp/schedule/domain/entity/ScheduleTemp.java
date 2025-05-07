@@ -24,7 +24,6 @@ import java.time.temporal.ChronoUnit;
 
 @Entity
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ScheduleTemp extends BaseEntity {

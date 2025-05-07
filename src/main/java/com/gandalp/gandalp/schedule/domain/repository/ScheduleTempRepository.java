@@ -16,10 +16,10 @@ public interface ScheduleTempRepository extends JpaRepository<ScheduleTemp, Long
     Optional<ScheduleTemp> findById(Long schduleTempId);
 
     @Query("SELECT s FROM ScheduleTemp s " +
-            "WHERE s.nurse.email = :email " +
+            "WHERE s.nurse.id = :nurseId " +
             "AND s.endTime > :startTime " +
             "AND s.startTime < :endTime")
-    List<ScheduleTemp> findOverlappingTempSchedules(@Param("email") String email,
+    List<ScheduleTemp> findOverlappingTempSchedules(@Param("nurseId") Long nurseId,
                                                     @Param("startTime") LocalDateTime startTime,
                                                     @Param("endTime") LocalDateTime endTime);
 }

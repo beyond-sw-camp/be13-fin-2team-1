@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -44,15 +45,17 @@ public class ScheduleService {
         }
 
         Nurse nurse = nurseOpt.get();
-        LocalDateTime start = scheduleRequestDto.getStartTime();
-        LocalDateTime end = scheduleRequestDto.getEndTime();
+        LocalDateTime start = scheduleRequestDto.getStartTime().truncatedTo(ChronoUnit.HOURS);
+        LocalDateTime end = scheduleRequestDto.getEndTime().truncatedTo(ChronoUnit.HOURS);
+
+        System.out.println(start + "\n" + end);
 
         // 시간 겹치는 기존 스케줄 존재 여부 확인
         boolean hasConflict = !scheduleTempRepository
-                .findOverlappingTempSchedules(nurse.getEmail(), start, end)
+                .findOverlappingTempSchedules(nurse.getId(), start, end)
                 .isEmpty()
                 || !scheduleRepository
-                .findOverlappingSchedules(nurse.getEmail(), start, end)
+                .findOverlappingSchedules(nurse.getId(), start, end)
                 .isEmpty();
 
         if (hasConflict) {
@@ -90,7 +93,7 @@ public class ScheduleService {
                     .email(nurse.get().getEmail())
                     .build();
         } else {
-            return null;
+            throw new RuntimeException("nurse is empty or password is wrong");
         }
         return nurseResponseDto;
     }
@@ -124,7 +127,7 @@ public class ScheduleService {
             return responseDtos;
 
         } catch (Exception e) {
-            return Collections.emptyList(); // 예외 발생 시 빈 리스트 반환
+            throw new RuntimeException("승인 대기 중 오프 조회 실패");
         }
     }
 
@@ -133,6 +136,11 @@ public class ScheduleService {
         Optional<ScheduleTemp> scheduleTemp = scheduleTempRepository.findById(scheduleTempId);
 
         if(scheduleTemp.isPresent()) {
+
+            if(scheduleTemp.get().getCategory() != TempCategory.WAITING_OFF) {
+                throw new RuntimeException("이미 처리되었습니다.");
+            }
+
             scheduleTemp.get().acceptedOff();
 
             Schedule schedule = Schedule.builder()
@@ -145,10 +153,12 @@ public class ScheduleService {
 
             scheduleRepository.save(schedule);
 
+            System.out.println(schedule.getCategory());
+
             Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("SCHEDULE_CATEGORY",String.valueOf(schedule.getCategory()));
 
             if(codeLabel.isEmpty()) {
-                return null;
+                throw new RuntimeException("Code Label is Empty");
             }
 
             OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
@@ -162,7 +172,7 @@ public class ScheduleService {
             return offScheduleResponseDto;
 
         } else {
-            return null;
+            throw new RuntimeException("scheduleTemp is empty");
         }
     }
 }
