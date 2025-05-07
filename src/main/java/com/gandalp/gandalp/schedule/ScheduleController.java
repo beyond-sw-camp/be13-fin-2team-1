@@ -3,6 +3,7 @@ package com.gandalp.gandalp.schedule;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleRequestDto;
+import com.gandalp.gandalp.schedule.domain.dto.OffScheduleResponseDto;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
@@ -55,6 +56,20 @@ public class ScheduleController {
         }
         return ResponseEntity.ok().body(offScheduleTempResponseDtos);
     }
+
+    // 승인 대기 중인 오프 관리
+    // 임시 스케줄에 있는 오프 승인 시 -> 처리됨으로 바뀌고 스케쥴에 카테고리 승인된 오프로 바뀌고 삽입
+    @PostMapping("/acceptOff/{schedule-temp-id}")
+    public ResponseEntity<OffScheduleResponseDto> acceptOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
+        try {
+            OffScheduleResponseDto offScheduleResponseDto = scheduleService.acceptOff(scheduleTempId);
+            return ResponseEntity.ok().body(offScheduleResponseDto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    // 임시 스케줄에 있는 오프 반려 시 -> 처리됨으로 만 바뀜
 
     // 이메일과 비밀번호 체크
     @PostMapping("/check")

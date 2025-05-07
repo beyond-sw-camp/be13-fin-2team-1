@@ -15,4 +15,6 @@ public interface NurseRepository extends JpaRepository<Nurse, Long>, NurseReposi
 
     List<Nurse> findByDepartment(Department department);
 
+    Optional<Nurse> findByPasswordAndEmail(String password, String email);
+
 }
