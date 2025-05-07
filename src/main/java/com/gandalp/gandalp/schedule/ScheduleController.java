@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 
 import org.hibernate.action.internal.EntityActionVetoException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,34 +37,35 @@ public class ScheduleController {
     private final SurgeryScheduleService surgeryScheduleService;
 
     @PostMapping("/off")
-    public ResponseEntity<OffScheduleTempResponseDto> createOffSchedule(@RequestBody OffScheduleRequestDto scheduleRequestDto) {
+    public ResponseEntity<?> createOffSchedule(@RequestBody OffScheduleRequestDto scheduleRequestDto) {
         OffScheduleTempResponseDto offScheduleTempResponseDto = null;
         try {
             offScheduleTempResponseDto = scheduleService.createOffSchecule(scheduleRequestDto);
         }
         catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return offScheduleTempResponseDto == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(offScheduleTempResponseDto);
     }
 
     @DeleteMapping("/off")
-    public ResponseEntity<Void> deleteOffSchedule(@RequestBody Long scheduleTempId) {
+    public ResponseEntity<?> deleteOffSchedule(@RequestBody Long scheduleTempId) {
         try {
             scheduleService.deleteOffScheduleTemp(scheduleTempId);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/off")
-    public ResponseEntity<List<OffScheduleTempResponseDto>> getOffSchedule(String email) {
+    public ResponseEntity<?> getOffSchedule(String email) {
         List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
         try {
             offScheduleTempResponseDtos = scheduleService.getOffScheduleTemp(email);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(offScheduleTempResponseDtos);
     }
@@ -71,12 +73,13 @@ public class ScheduleController {
     // 승인 대기 중인 오프 관리
     // 임시 스케줄에 있는 오프 승인 시 -> 처리됨으로 바뀌고 스케쥴에 카테고리 승인된 오프로 바뀌고 삽입
     @PostMapping("/acceptOff/{schedule-temp-id}")
-    public ResponseEntity<OffScheduleResponseDto> acceptOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
+    @PreAuthorize("hasRole('HEAD_NURSE')")
+    public ResponseEntity<?> acceptOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
         try {
             OffScheduleResponseDto offScheduleResponseDto = scheduleService.acceptOff(scheduleTempId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -84,12 +87,12 @@ public class ScheduleController {
 
     // 이메일과 비밀번호 체크
     @PostMapping("/check")
-    public ResponseEntity<NurseResponseDto> checkPassword(String password, String email) {
+    public ResponseEntity<?> checkPassword(String password, String email) {
         NurseResponseDto nurseResponseDto = null;
         try {
             nurseResponseDto = scheduleService.checkPassword(password, email);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
         return ResponseEntity.ok().body(nurseResponseDto);
     }

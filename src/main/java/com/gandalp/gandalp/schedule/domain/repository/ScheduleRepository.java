@@ -13,10 +13,10 @@ import java.util.List;
 public interface ScheduleRepository extends JpaRepository<Schedule, Long>, ScheduleRepositoryCustom {
 
     @Query("SELECT s FROM Schedule s " +
-            "WHERE s.nurse.email = :email " +
+            "WHERE s.nurse.id = :nurseId " +
             "AND s.endTime > :startTime " +
             "AND s.startTime < :endTime")
-    List<Schedule> findOverlappingSchedules(@Param("email") String email,
+    List<Schedule> findOverlappingSchedules(@Param("nurseId") Long nurseId,
                                             @Param("startTime") LocalDateTime startTime,
                                             @Param("endTime") LocalDateTime endTime);
 }

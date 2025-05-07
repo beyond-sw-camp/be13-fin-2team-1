@@ -61,4 +61,5 @@ public class Schedule extends BaseEntity {
 		this.endTime = endTime != null ? endTime.truncatedTo(ChronoUnit.HOURS) : null;
 	}
 
+	
 }

@@ -17,6 +17,7 @@ public class OffScheduleRequestDto {
 
     private String content;
 
+
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
