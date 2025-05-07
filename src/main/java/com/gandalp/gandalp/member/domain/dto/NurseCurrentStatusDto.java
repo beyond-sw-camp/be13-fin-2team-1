@@ -1,0 +1,24 @@
+package com.gandalp.gandalp.member.domain.dto;
+
+import com.gandalp.gandalp.member.domain.entity.Nurse;
+import com.gandalp.gandalp.member.domain.entity.Status;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+public class NurseCurrentStatusDto {
+	private String name;
+	private Status workingStatus;
+
+
+	public NurseCurrentStatusDto(Nurse nurse){
+		this.name = nurse.getName();
+		this.workingStatus = nurse.getWorkingStatus();
+	}
+}
