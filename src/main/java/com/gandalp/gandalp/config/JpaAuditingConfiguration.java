@@ -1,4 +1,4 @@
-package com.gandalp.gandalp.config.swagger;
+package com.gandalp.gandalp.config;
 
 import com.gandalp.gandalp.common.AuditorAwareImpl;
 import org.springframework.context.annotation.Bean;

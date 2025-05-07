@@ -1,4 +1,4 @@
-package com.gandalp.gandalp.config.swagger;
+package com.gandalp.gandalp.config;
 
 import com.gandalp.gandalp.auth.jwt.JwtAuthenticationFilter;
 import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
