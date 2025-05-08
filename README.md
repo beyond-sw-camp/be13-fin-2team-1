@@ -138,12 +138,20 @@ Jenkins + Docker 기반 자동 배포 구성
 
 ---
 
-## 🧱 7. 시스템 아키텍처
-전체 시스템 구성도 및 흐름 설명
+## 🧱 7. 시스템 아키텍쳐
+<details>
+    <summary>시스템 아키텍쳐</summary>
+    <img width="1202" alt="API 명세서" src="https://github.com/user-attachments/assets/7c210558-e568-4beb-8367-f42102e400c5" />
+</details>
+
 
 ---
 
 ## 🗂️ 8. WBS
+<details>
+    <summary>WBS</summary>
+    <img width="1202" alt="API 명세서" src="https://github.com/user-attachments/assets/17acea0b-5a95-400a-8a41-9805170ae01a" />
+</details>
 [WBS 링크](https://docs.google.com/spreadsheets/d/1MOykkjoHG5tIhQhpYJZ3UK5iLq_teeQv8LXvKvmIpg0/edit?usp=sharing)
 
 ---
