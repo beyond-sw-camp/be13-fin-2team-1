@@ -31,5 +31,14 @@ public class Department {
 	private String name;
 
 	@Column(nullable = false)
-	private int nurseCount;
+	private int nurseCount = 0;
+
+
+	public void countUp(){
+		this.nurseCount++;
+	}
+
+	public void countDown(){
+		this.nurseCount--;
+	}
 }

@@ -101,18 +101,25 @@ public class ScheduleController {
     // 수술 일정 조회
     @Operation(summary = "수술 일정 조회", description = "수간호사와 간호사가 수술 일정을 조회 가능")
     @GetMapping("/surgery")
-    public ResponseEntity<List<SurgeryScheduleResponseDto>> getAllSurgerySchdule(Authentication auth){
+    public ResponseEntity<?> getAllSurgerySchdule(Authentication auth){
 
-        CustomUserDetails userDetails = (CustomUserDetails)auth.getPrincipal();
-        Member member = userDetails.getMember();
+        List<SurgeryScheduleResponseDto> surgerySchedules = null;
+        try{
+            CustomUserDetails userDetails = (CustomUserDetails)auth.getPrincipal();
+            Member member = userDetails.getMember();
 
-        if (member == null){
-            throw new EntityNotFoundException("로그인을 해주세요");
+            if (member == null){
+                throw new EntityNotFoundException("로그인을 해주세요");
+            }
+
+            Department department = member.getDepartment();
+
+             surgerySchedules = surgeryScheduleService.getAllSurgerySchedule(department.getId());
+
+
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
-
-        Department department = member.getDepartment();
-
-        List<SurgeryScheduleResponseDto> surgerySchedules = surgeryScheduleService.getAllSurgerySchedule(department.getId());
 
 
         return ResponseEntity.ok(surgerySchedules);

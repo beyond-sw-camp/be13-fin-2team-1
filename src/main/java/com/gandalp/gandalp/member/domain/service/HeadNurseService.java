@@ -1,5 +1,7 @@
 package com.gandalp.gandalp.member.domain.service;
 
+import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
+import com.gandalp.gandalp.auth.model.service.AuthService;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.dto.NurseRequestDto;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
@@ -11,8 +13,12 @@ import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.apache.catalina.security.SecurityUtil;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,26 +31,22 @@ public class HeadNurseService {
 
     private final PasswordEncoder passwordEncoder;
     private final NurseRepository nurseRepository;
-    private final MemberRepository memberRepository;
+    private final AuthService authService;
 
     // 수간호사가 간호사 생성
     @Transactional
-    public void createNurse(NurseRequestDto reqDto, Member loginMember){
+    public void createNurse(NurseRequestDto reqDto){
 
-        // 1. login 한 회원이 member repo 에 존재하는지 검증
-        Member member = memberRepository.findById(loginMember.getId()).orElseThrow(
-                () -> new EntityNotFoundException("해당하는 회원이 없습니다.")
-        );
+        // 1. 현재 로그인한 사용자
+        Member loginMember = authService.getLoginMember();
 
-
-        // 2. 부서 추출
-        Department department = member.getDepartment();
+        // 2. 부서 가져오기
+        Department department = loginMember.getDepartment();
 
 
-        // 3. nurse 이메일 중복 체크
-        if (nurseRepository.findByEmail(reqDto.getEmail()).isPresent()) {
-                throw new IllegalArgumentException("이미 등록된 이메일입니다.");
-        }
+        // 3. 이메일 중복 체크
+        authService.validateDuplicateEmail(reqDto.getEmail());
+
 
         // 4. 비밀번호 암호화
         String password = passwordEncoder.encode(reqDto.getPassword());
@@ -60,6 +62,7 @@ public class HeadNurseService {
 
 
         nurseRepository.save(nurse);
+        department.countUp();
 
         log.info("간호사 생성 완료 ~~");
 
@@ -73,7 +76,7 @@ public class HeadNurseService {
 
         // 1. nurse 존재하는지 검증
         Nurse nurse = nurseRepository.findById(nurseId).orElseThrow(
-                ()-> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다. ")
+                ()-> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다.")
         );
 
         // 2. 수정
@@ -88,46 +91,33 @@ public class HeadNurseService {
     @Transactional
     public void deleteNurse(Long nurseId) {
 
-
+        // 1. 간호사가 DB에 존재하는지 검증
         Nurse nurse = nurseRepository.findById(nurseId).orElseThrow(
                 () -> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다.")
         );
 
+        // 2. 부서 인원 수 변경
+        Department department = nurse.getDepartment();
+        if ( department.getNurseCount() <= 0 ){
+            throw new IllegalArgumentException("간호사 인원 수가 0명 이하가 될 수 없습니다.");
+        }
+
+        department.countDown();
 
         nurseRepository.deleteById(nurseId);
     }
 
 
     // 모든 간호사 조회 (수간호사 모두 가능) -> 페이징 처리
-    public Page<NurseResponseDto> getAll(String keyword, Pageable pageable, Long departmentId){
+    public Page<NurseResponseDto> getAll(String keyword, Pageable pageable){
 
-        // 검색어가 있는데 검색 옵션을 선택하지 않은 경우 검색이 안됨
+        Member loginMember = authService.getLoginMember();
+        Long deptId = loginMember.getDepartment().getId();
 
-        Page<NurseResponseDto> nurseList = nurseRepository.getAll(keyword, pageable, departmentId);
+        Page<NurseResponseDto> nurseList = nurseRepository.getAll(keyword, pageable, deptId);
 
         return nurseList;
     }
-
-
-
-//    // 간호사 단 건 조회
-//    public NurseResponseDto getOneNurse(Long nurseId){
-//
-//        // 1. 간호사 조회
-//        Nurse nurse = nurseRepository.findById(nurseId).orElseThrow(
-//                () -> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다.")
-//        );
-//
-//
-//        return new NurseResponseDto(nurse);
-//    }
-
-
-
-
-
-
-
 
 
 }

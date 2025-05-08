@@ -3,18 +3,28 @@ package com.gandalp.gandalp.member.domain.service;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
+import com.gandalp.gandalp.auth.model.service.AuthService;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
 import com.gandalp.gandalp.member.domain.dto.NurseCurrentStatusDto;
+import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
+import com.gandalp.gandalp.member.domain.dto.NurseStatusUpdateDto;
+import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
 import com.gandalp.gandalp.member.domain.entity.Status;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
+import com.gandalp.gandalp.schedule.domain.service.ScheduleService;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +37,21 @@ import lombok.extern.slf4j.Slf4j;
 public class NurseService {
 
 	private final NurseRepository nurseRepository;
+	private final ScheduleService scheduleService;
 	private final DepartmentRepository departmentRepository;
 	private final ScheduleRepository scheduleRepository;
 	private final SurgeryScheduleRepository surgeryScheduleRepository;
+	private final AuthService authService;
 
 	///  간호사들의 현재 상태 조회
-	public List<NurseCurrentStatusDto> getNurseStatus(Department dept){
+	public List<NurseCurrentStatusDto> getNurseStatus(){
+
+		// 1. 로그인한 멤버 있는지 검증
+		Member loginMember = authService.getLoginMember();
+
+
+		Department dept = loginMember.getDepartment();
+
 
 		Department department = departmentRepository.findById(dept.getId()).orElseThrow(
 			() -> new EntityNotFoundException("해당하는 과가 존재하지 않습니다.")
@@ -48,23 +67,29 @@ public class NurseService {
 
 	// 간호사들 현재 상태 수정
 	@Transactional
-	public NurseCurrentStatusDto updateNurseStatus( String email, Status workingStatus){
+	public NurseCurrentStatusDto updateNurseStatus(NurseStatusUpdateDto request ){
 
+		// 1. 로그인했는지 검증
+		authService.getLoginMember();
 
-		// 이메일로 해당 nurse가 존재하는지 검증
+		// 2. 이메일 + 비밀번호로 본인 인증
+		NurseResponseDto nurseDto = scheduleService.checkPassword(request.getPassword(), request.getEmail());
 
-		Nurse nurse = nurseRepository.findByEmail(email).orElseThrow(
+		if (nurseDto == null) {
+			throw new IllegalArgumentException("해당 간호사가 존재하지 않습니다.");
+		}
 
+		// 3. 이메일로 해당 nurse가 존재하는지 검증
+		Nurse nurse = nurseRepository.findByEmail(nurseDto.getEmail()).orElseThrow(
 			() -> new EntityNotFoundException("해당 간호사가 존재하지 않습니다.")
 		);
 
-		// 근무 상태 수정
-		if(workingStatus == Status.ON)
-			nurse.updateWorkingStatus(Status.ON);
-		else if(workingStatus == Status.OFF)
-			nurse.updateWorkingStatus(Status.OFF);
-		else if(workingStatus == Status.IN_SURGERY)
-			nurse.updateWorkingStatus(Status.IN_SURGERY);
+		Status workingStatus = request.getWorkingStatus();
+
+
+		// 4. 근무 상태 수정
+		nurse.updateWorkingStatus(workingStatus);
+
 
 		return new NurseCurrentStatusDto(nurse);
 	}
