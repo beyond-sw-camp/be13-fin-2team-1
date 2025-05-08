@@ -19,7 +19,15 @@ public class QHospital extends EntityPathBase<Hospital> {
 
     public static final QHospital hospital = new QHospital("hospital");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
     public final StringPath address = createString("address");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
 
     public final NumberPath<Integer> erCount = createNumber("erCount", Integer.class);
 
@@ -28,6 +36,12 @@ public class QHospital extends EntityPathBase<Hospital> {
     public final StringPath name = createString("name");
 
     public final StringPath phoneNumber = createString("phoneNumber");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QHospital(String variable) {
         super(Hospital.class, forVariable(variable));

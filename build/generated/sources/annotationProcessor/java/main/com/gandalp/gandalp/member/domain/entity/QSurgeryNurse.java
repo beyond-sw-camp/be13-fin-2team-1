@@ -22,11 +22,25 @@ public class QSurgeryNurse extends EntityPathBase<SurgeryNurse> {
 
     public static final QSurgeryNurse surgeryNurse = new QSurgeryNurse("surgeryNurse");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
+
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final QNurse nurse;
 
     public final com.gandalp.gandalp.schedule.domain.entity.QSurgerySchedule surgerySchedule;
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QSurgeryNurse(String variable) {
         this(SurgeryNurse.class, forVariable(variable), INITS);

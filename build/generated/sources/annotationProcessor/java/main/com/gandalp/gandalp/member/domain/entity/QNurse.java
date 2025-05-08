@@ -22,6 +22,14 @@ public class QNurse extends EntityPathBase<Nurse> {
 
     public static final QNurse nurse = new QNurse("nurse");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
+
     public final com.gandalp.gandalp.hospital.domain.entity.QDepartment department;
 
     public final StringPath email = createString("email");
@@ -31,6 +39,12 @@ public class QNurse extends EntityPathBase<Nurse> {
     public final StringPath name = createString("name");
 
     public final StringPath password = createString("password");
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public final EnumPath<Status> workingStatus = createEnum("workingStatus", Status.class);
 
