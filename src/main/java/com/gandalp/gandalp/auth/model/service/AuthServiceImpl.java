@@ -1,6 +1,7 @@
 package com.gandalp.gandalp.auth.model.service;
 
 import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
+import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
 import com.gandalp.gandalp.auth.model.dto.JoinRequestDto;
 import com.gandalp.gandalp.auth.model.dto.LoginRequestDto;
 import com.gandalp.gandalp.auth.model.dto.TokenResponseDto;
@@ -10,9 +11,14 @@ import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalRepository;
 import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.repository.MemberRepository;
+import com.gandalp.gandalp.member.domain.repository.NurseRepository;
+
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthServiceImpl implements AuthService {
 
     private final MemberRepository memberRepository;
+    private final NurseRepository nurseRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final DepartmentRepository departmentRepository;
@@ -120,4 +127,32 @@ public class AuthServiceImpl implements AuthService {
 
         return new TokenResponseDto(accessToken, refreshToken);
     }
+
+    @Override
+    public Member getLoginMember() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("로그인이 필요합니다.");
+        }
+
+        Object principal = auth.getPrincipal();
+        if (!(principal instanceof CustomUserDetails userDetails)) {
+            throw new IllegalStateException("유효하지 않은 사용자입니다.");
+        }
+
+        return memberRepository.findById(userDetails.getMember().getId())
+            .orElseThrow(() -> new EntityNotFoundException("회원 정보가 존재하지 않습니다."));
+    }
+
+    @Override
+    public void validateDuplicateEmail(String email) {
+        if (nurseRepository.findByEmail(email).isPresent()) {
+            throw new IllegalArgumentException("이미 등록된 이메일입니다: " + email);
+        }
+    }
+
+
+
+
 }

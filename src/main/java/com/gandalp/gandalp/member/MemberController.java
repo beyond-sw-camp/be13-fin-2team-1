@@ -24,9 +24,16 @@ public class MemberController {
     @Operation(summary = "회원 정보 수정", description = "관리자가 회원의 정보를 수정합니다.")
     @PostMapping("/{memberId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<MemberResponseDto> updateMember(@PathVariable Long memberId, MemberUpdateDto updateDto){
+    public ResponseEntity<?> updateMember(@PathVariable Long memberId, MemberUpdateDto updateDto){
 
-        MemberResponseDto memberResponseDto = memberService.updateMember(memberId, updateDto);
+        MemberResponseDto memberResponseDto = null;
+        try{
+            memberResponseDto = memberService.updateMember(memberId, updateDto);
+
+        }catch(Exception e) {
+            ResponseEntity.badRequest().body(e.getMessage());
+        }
+
 
         return ResponseEntity.ok(memberResponseDto);
     }
@@ -35,8 +42,15 @@ public class MemberController {
     @Operation(summary = "회원 삭제", description = "관리자가 특정 회원을 삭제합니다.")
     @DeleteMapping("/{memberId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> deleteMember(@PathVariable Long memberId){
-        memberService.deleteMember(memberId);
+    public ResponseEntity<?> deleteMember(@PathVariable Long memberId){
+
+        try {
+            memberService.deleteMember(memberId);
+        }catch(Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+
 
         return ResponseEntity.ok("회원 삭제 완료");
     }
