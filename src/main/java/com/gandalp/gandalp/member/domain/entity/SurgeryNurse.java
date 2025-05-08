@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.member.domain.entity;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.schedule.domain.entity.SurgerySchedule;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,7 +17,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class SurgeryNurse {
+public class SurgeryNurse extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
