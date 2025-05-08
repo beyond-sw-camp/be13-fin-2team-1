@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.member.domain.entity;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 
 import com.gandalp.gandalp.member.domain.dto.NurseUpdateDto;
@@ -24,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Nurse {
+public class Nurse extends BaseEntity {
 
 	@Id @GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "nurse-id")
