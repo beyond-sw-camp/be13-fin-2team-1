@@ -29,6 +29,9 @@ public class QMember extends EntityPathBase<Member> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
+
     public final com.gandalp.gandalp.hospital.domain.entity.QDepartment department;
 
     public final com.gandalp.gandalp.hospital.domain.entity.QHospital hospital;
@@ -41,6 +44,9 @@ public class QMember extends EntityPathBase<Member> {
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QMember(String variable) {
         this(Member.class, forVariable(variable), INITS);

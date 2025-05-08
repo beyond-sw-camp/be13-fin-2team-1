@@ -22,6 +22,14 @@ public class QDepartment extends EntityPathBase<Department> {
 
     public static final QDepartment department = new QDepartment("department");
 
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
+
     public final QHospital hospital;
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -29,6 +37,12 @@ public class QDepartment extends EntityPathBase<Department> {
     public final StringPath name = createString("name");
 
     public final NumberPath<Integer> nurseCount = createNumber("nurseCount", Integer.class);
+
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QDepartment(String variable) {
         this(Department.class, forVariable(variable), INITS);

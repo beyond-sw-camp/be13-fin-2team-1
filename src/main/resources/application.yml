@@ -1,16 +1,16 @@
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: jdbc:mariadb://localhost:3306/gandalp
+    url: jdbc:mariadb://localhost:3306/gandalp_db
     # url: jdbc:mariadb://localhost:3306/web
     username: root
     # username: gandalp
-    password: dkssud3857!!
+    password: "0000"
     # password: 'gandalp'
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         show_sql: true

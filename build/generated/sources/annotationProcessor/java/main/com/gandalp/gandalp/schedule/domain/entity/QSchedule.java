@@ -31,6 +31,9 @@ public class QSchedule extends EntityPathBase<Schedule> {
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
+
     public final DateTimePath<java.time.LocalDateTime> endTime = createDateTime("endTime", java.time.LocalDateTime.class);
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
@@ -41,6 +44,9 @@ public class QSchedule extends EntityPathBase<Schedule> {
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QSchedule(String variable) {
         this(Schedule.class, forVariable(variable), INITS);
