@@ -128,6 +128,7 @@ https://docs.google.com/spreadsheets/d/1F4ceqJwuPZzXLIOu3IjL5Qlj_13gn2_dcEDAObE9
 
 <details>
 <summary>📄 페이지별 구성도</summary>
+https://www.figma.com/design/ij3Ajyt45IiRekAAUzJx73/%EA%B0%84%EB%8B%AC%ED%94%84?node-id=0-1&p=f&t=GbrbuA8QjXI0E5iN-0
 </details>
 
 
