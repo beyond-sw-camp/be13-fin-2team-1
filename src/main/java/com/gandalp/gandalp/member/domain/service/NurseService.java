@@ -110,16 +110,14 @@ public class NurseService {
 		List<Nurse> allNurse = nurseRepository.findAll();
 		for(Nurse nurse: allNurse){
 
-			/// for log - 삭제하기
-			Status before = nurse.getWorkingStatus();
 
+			Status before = nurse.getWorkingStatus();
 
 			// 1. 수술중인지
 			if (surgeryScheduleRepository.isNurseInSurgery(nurse.getId(), now)){
 				nurse.updateWorkingStatus(Status.IN_SURGERY);
 				continue;
 			}
-
 
 			// 2. 일반 진료근무중인지 확인
 			if (scheduleRepository.findCurrentSchedule(nurse.getId(), now)){
@@ -130,7 +128,7 @@ public class NurseService {
 			// 3. 둘다 아니면 off !
 			nurse.updateWorkingStatus(Status.OFF);
 
-			/// for log - 삭제하기
+
 			Status after = nurse.getWorkingStatus();
 			if (!before.equals(after)) {
 				nurse.updateWorkingStatus(after);

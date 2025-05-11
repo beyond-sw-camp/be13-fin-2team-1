@@ -23,6 +23,7 @@ import lombok.NoArgsConstructor;
 public class Room extends BaseEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "room-id")
 	private Long id;
 
 	@Column(nullable = false)

@@ -38,6 +38,8 @@ public class QNurse extends EntityPathBase<Nurse> {
 
     public final StringPath name = createString("name");
 
+    public final StringPath no = createString("no");
+
     public final StringPath password = createString("password");
 
     //inherited

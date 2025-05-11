@@ -3,23 +3,31 @@ package com.gandalp.gandalp.schedule.domain.service;
 import com.gandalp.gandalp.common.repository.CommonCodeRepository;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
+import com.gandalp.gandalp.member.domain.entity.NurseStatistics;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
+import com.gandalp.gandalp.member.domain.repository.NurseStatisticsRepository;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleRequestDto;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleResponseDto;
 import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
+import com.gandalp.gandalp.schedule.domain.dto.StaticsUpdateDto;
 import com.gandalp.gandalp.schedule.domain.entity.Category;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
 import com.gandalp.gandalp.schedule.domain.entity.TempCategory;
+import com.gandalp.gandalp.schedule.domain.entity.Work;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleTempRepository;
+import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -37,6 +45,8 @@ public class ScheduleService {
     private final NurseRepository nurseRepository;
     private final PasswordEncoder passwordEncoder;
     private final CommonCodeRepository commonCodeRepository;
+    private final SurgeryScheduleRepository surgeryScheduleRepository;
+    private final NurseStatisticsRepository nurseStatisticsRepository;
 
     public OffScheduleTempResponseDto createOffSchecule(OffScheduleRequestDto scheduleRequestDto) {
         Optional<Nurse> nurseOpt = nurseRepository.findByEmail(scheduleRequestDto.getEmail());
@@ -175,4 +185,98 @@ public class ScheduleService {
             throw new RuntimeException("scheduleTemp is empty");
         }
     }
+
+
+
+
+    // 매월 1일 간호사들의 근무 통계가 자동으로 업데이트됨
+    @Scheduled(cron = "0 0 0 1 * *")
+    public void autoUpdateNurseStatics(){
+
+        // 1. 모든 간호사들 조회
+
+        List<Nurse> allNurse = nurseRepository.findAll();
+
+        // 업데이트할 날짜 계산
+        LocalDate now = LocalDate.now();
+        // 지난 달 가져오기
+        // ex) 1월이면 작년 12월 가져옴
+        int year = now.getMonthValue() == 1 ? now.getYear() -1 : now.getYear();
+        int month = now.getMonthValue() == 1? 12 : now.getMonthValue() -1;
+
+
+        // 통계 범위를 낼 기간 구하기 ex) 1 ~ 31 일
+        LocalDateTime start = LocalDate.of(year, month, 1).atStartOfDay();
+        LocalDateTime end = start.withDayOfMonth(start.toLocalDate().lengthOfMonth())
+        .withHour(23).withMinute(59).withSecond(59);
+
+
+        // 모든 간호사의 스케줄 day, evening, night, off로 분리
+        for(Nurse nurse : allNurse){
+
+            Long nurseId = nurse.getId();
+            List<Schedule> schedules = scheduleRepository.findByNurseAndStartTimeBetween(nurse, start, end);
+
+            int day = 0;
+            int evening = 0;
+            int night = 0;
+            int off = 0;
+
+            for(Schedule schedule : schedules){
+                // 간호사 상태가 working네 start time이 존재하는 근무 기록을 가져옴
+                if(schedule.getCategory() == Category.WORKING && schedule.getStartTime() != null){
+
+                    Work workShift = resolveShift(schedule.getStartTime().getHour());
+                    switch (workShift) {
+                        case DAY -> day++;
+                        case EVENING -> evening++;
+                        case NIGHT -> night++;
+                    }
+                }else if(schedule.getCategory() == Category.ACCEPTED_OFF){
+                    off++;
+                }
+            }
+
+            // 간호사 한달 수술 수 조회
+            int surgeryCount = surgeryScheduleRepository.countByNurseAndMonth(nurseId, start, end);
+
+            // 통계가 존재하면 업데이트( 서버 재시작되는 경우 등 스케줄러 실행됨)
+            // 없으면 통계 생성 ( year, month, nurse 넣어서 통계 만들기)
+            StaticsUpdateDto dto = StaticsUpdateDto.builder()
+                .year(year)
+                .month(month)
+                .dayCount(day)
+                .eveningCount(evening)
+                .nightCount(night)
+                .offCount(off)
+                .surgeryCount(surgeryCount)
+                .build();
+
+
+
+            // NurseStatics entity에 조회 후 업데이트
+            NurseStatistics statistics = nurseStatisticsRepository
+                .findByNurseIdAndYearAndMonth(nurse.getId(), year, month)
+                .orElseGet(() -> NurseStatistics.builder()
+                    .nurse(nurse)
+                    .year(year)
+                    .month(month)
+                    .build());
+
+            // 업데이트
+            statistics.updateStatic(dto);
+            nurseStatisticsRepository.save(statistics);
+
+
+
+        }
+
+    }
+
+    private Work resolveShift(int hour) {
+        if (hour >= 6 && hour < 14) return Work.DAY;
+        if (hour >= 14 && hour < 22) return Work.EVENING;
+        return Work.NIGHT;
+    }
+
 }

@@ -34,11 +34,16 @@ public class AuthController {
     @Operation(summary = "회원가입")
     @PostMapping("/join")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<String> join(@Valid @RequestBody JoinRequestDto dto) {
-
-        authService.join(dto);
+    public ResponseEntity<?> join(@Valid @RequestBody JoinRequestDto dto) {
         Map<String, String> response = new HashMap<>();
-        response.put("message", "회원가입 완료");
+        try{
+            authService.join(dto);
+            response.put("message", "회원가입 완료");
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
         return ResponseEntity.ok("회원가입");
     }
 
@@ -48,15 +53,18 @@ public class AuthController {
      */
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequestDto dto) {
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto) {
+
+        TokenResponseDto tokenResponse = null;
 
         try {
-            TokenResponseDto tokenResponse = authService.login(dto);
-            return ResponseEntity.ok(createSuccessResponse("로그인 성공", tokenResponse));
+            tokenResponse = authService.login(dto);
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(createErrorResponse(e.getMessage(), dto.getAccountId()));
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
+
+        return ResponseEntity.ok(createSuccessResponse("로그인 성공", tokenResponse));
     }
 
     /**
@@ -65,17 +73,29 @@ public class AuthController {
      */
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestHeader("Authorization") String bearerToken) {
-        authService.logout(bearerToken);
-        return ResponseEntity.noContent().build(); // 204 No Content
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken) {
+
+        try{
+            authService.logout(bearerToken);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+        return ResponseEntity.ok("로그아웃 성공");
     }
 
     /**
      * Refresh 토큰으로 Access Token 재발급
      */
     @PostMapping("/refresh")
-    public ResponseEntity<TokenResponseDto> refresh(@RequestHeader("Authorization") String bearerToken) {
-        TokenResponseDto tokenResponse = authService.refresh(bearerToken);
+    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String bearerToken) {
+        TokenResponseDto tokenResponse = null;
+        try{
+            tokenResponse = authService.refresh(bearerToken);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
         return ResponseEntity.ok(tokenResponse);
     }
 
