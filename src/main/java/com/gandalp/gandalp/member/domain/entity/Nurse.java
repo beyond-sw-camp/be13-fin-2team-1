@@ -1,5 +1,7 @@
 package com.gandalp.gandalp.member.domain.entity;
 
+import java.util.UUID;
+
 import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 
@@ -15,6 +17,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +34,9 @@ public class Nurse extends BaseEntity {
 	@Column(name = "nurse-id")
 	private Long id;
 
+	@Column(unique = true, length = 36)
+	private String no;
+
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "department-id")
 	private Department department;
@@ -46,6 +52,13 @@ public class Nurse extends BaseEntity {
 
 	@Enumerated(EnumType.STRING)
 	private Status workingStatus;
+
+	@PrePersist // 객체 생성되면 자동 주입
+	public void assignUuid(){
+		if(this.no == null){
+			this.no = UUID.randomUUID().toString();
+		}
+	}
 
 	public void update(NurseUpdateDto updateDto){
 		this.name = updateDto.getName();

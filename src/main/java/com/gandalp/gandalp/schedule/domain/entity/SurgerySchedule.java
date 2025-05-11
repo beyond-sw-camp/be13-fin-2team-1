@@ -30,7 +30,7 @@ public class SurgerySchedule extends BaseEntity {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room-id")
+    @JoinColumn(name = "room-id", nullable = false)
     private Room room;
 
     @Column(nullable = false, length = 100)

@@ -2,19 +2,34 @@ package com.gandalp.gandalp.schedule.domain.repository;
 
 import static com.gandalp.gandalp.schedule.domain.entity.QSchedule.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.gandalp.gandalp.member.domain.entity.Nurse;
+import com.gandalp.gandalp.member.domain.entity.NurseStatistics;
+import com.gandalp.gandalp.member.domain.entity.Status;
+import com.gandalp.gandalp.member.domain.repository.NurseStatisticsRepository;
+import com.gandalp.gandalp.schedule.domain.dto.StaticsResponseDto;
 import com.gandalp.gandalp.schedule.domain.entity.Category;
+import com.gandalp.gandalp.schedule.domain.entity.Schedule;
+import com.gandalp.gandalp.schedule.domain.entity.SelectOption;
+import com.gandalp.gandalp.schedule.domain.entity.Work;
+import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom{
+public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
+	private final NurseStatisticsRepository nurseStatisticsRepository;
 
-
+	// 근무 시간
 	@Override
 	public boolean findCurrentSchedule(Long nurseId, LocalDateTime now) {
 
@@ -30,4 +45,92 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom{
 
 		return count != null && count > 0;
 	}
+
+
+
+	@Override
+	public StaticsResponseDto getNursesWorkingStatistics(Nurse nurse,Status status, SelectOption selectOption, int year, int month, Integer quarter) {
+
+		StaticsResponseDto statistics = null;
+
+
+		if (selectOption == null || selectOption == SelectOption.MONTH  ){
+			// 전 달
+
+			NurseStatistics s = nurseStatisticsRepository.findByNurseIdAndYearAndMonth(nurse.getId(), year, month).orElseThrow(
+					() -> new IllegalArgumentException(String.format("%d년 %d월에 대한 통계가 존재하지 않습니다.", year, month))
+				);
+
+			return StaticsResponseDto.builder()
+				.nurseId(nurse.getId())
+				.nurseName(nurse.getName())
+				.dayCount(s.getDayCount())
+				.eveningCount(s.getEveningCount())
+				.nightCount(s.getNightCount())
+				.offCount(s.getOffCount())
+				.surgeryCount(s.getSurgeryCount())
+				.build();
+
+
+
+		}else if ( selectOption == SelectOption.YEAR ){
+
+			List<NurseStatistics> nurseStatistics = nurseStatisticsRepository.findByNurseIdAndYear(nurse.getId(), year);
+			if (nurseStatistics.isEmpty()){
+				throw new IllegalArgumentException(
+					String.format("%d 년 전체에 대한 통계가 존재하지 않습니다. ", year)
+				);
+			}
+
+			statistics = sum(nurse, nurseStatistics);
+
+		}else if(selectOption == SelectOption.QUARTER) {
+
+
+			if (quarter == null || quarter < 1 || quarter > 4) {
+				throw new IllegalArgumentException("1~4 분기 중 하나를 선택해주세요.");
+			}
+			
+			int startMonth = (quarter-1) * 3 + 1;
+			int endMonth = startMonth + 2;
+
+			List<NurseStatistics> nurseStatistics = nurseStatisticsRepository.findByNurseAndYearAndMonthBetween(nurse, year, startMonth, endMonth);
+			if(nurseStatistics.isEmpty()){
+				throw new IllegalArgumentException(
+					String.format("%d년 %d분기에 대한 통계가 존재하지 않습니다. ", year, quarter)
+				);
+			}
+
+			statistics = sum(nurse, nurseStatistics);
+		}
+
+
+		return statistics;
+    }
+
+
+	private StaticsResponseDto sum(Nurse nurse, List<NurseStatistics> nurseStatistics){
+
+		int day = 0, night = 0, evening = 0, off = 0, surgery = 0;
+
+		for (NurseStatistics ns : nurseStatistics) {
+			day += ns.getDayCount();
+			night += ns.getNightCount();
+			evening += ns.getEveningCount();
+			off += ns.getOffCount();
+			surgery += ns.getSurgeryCount();
+		}
+
+		return StaticsResponseDto.builder()
+			.nurseId(nurse.getId())
+			.nurseName(nurse.getName())
+			.dayCount(day)
+			.eveningCount(evening)
+			.nightCount(night)
+			.offCount(off)
+			.surgeryCount(surgery)
+			.build();
+
+	}
+
 }

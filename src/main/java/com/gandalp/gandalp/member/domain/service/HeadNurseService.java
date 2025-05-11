@@ -91,6 +91,7 @@ public class HeadNurseService {
     @Transactional
     public void deleteNurse(Long nurseId) {
 
+
         // 1. 간호사가 DB에 존재하는지 검증
         Nurse nurse = nurseRepository.findById(nurseId).orElseThrow(
                 () -> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다.")

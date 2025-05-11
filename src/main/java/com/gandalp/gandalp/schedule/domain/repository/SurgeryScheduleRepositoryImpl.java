@@ -71,6 +71,20 @@ public class SurgeryScheduleRepositoryImpl implements SurgeryScheduleRepositoryC
 		return scheduleList;
 	}
 
+	@Override
+	public int countByNurseAndMonth(Long nurseId, LocalDateTime start, LocalDateTime end) {
+		Long count = queryFactory.select(surgeryNurse.count())
+			.from(surgeryNurse)
+			.join(surgeryNurse.surgerySchedule, surgerySchedule)
+			.where(
+				surgeryNurse.nurse.id.eq(nurseId),
+				surgerySchedule.startTime.between(start, end)
+			)
+			.fetchOne();
+
+
+		return count == null ? 0 : count.intValue();
+	}
 
 	// 수술 일정 별 참여하는 간호사 이름 조회
 	public List<String> getNurseNamesByScheduleId(Long scheduleId) {

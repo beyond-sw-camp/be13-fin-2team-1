@@ -66,6 +66,35 @@ public class DataInitializer implements ApplicationRunner {
 
                 System.out.println("✅ common_code.sql 실행 완료");
 
+                /// ////
+                Resource resourceMem = new ClassPathResource("member.sql");
+                String sqlMem = new String(resourceMem.getInputStream().readAllBytes());
+
+                for (String statement : sqlMem.split(";")) {
+                    if (!statement.trim().isEmpty()) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.execute(statement.trim());
+                        }
+                    }
+                }
+
+                System.out.println("✅ member.sql 실행 완료");
+
+                Resource resourceNurse = new ClassPathResource("nurse.sql");
+                String sqlNurse = new String(resourceNurse.getInputStream().readAllBytes());
+
+                for (String statement : sqlNurse.split(";")) {
+                    if (!statement.trim().isEmpty()) {
+                        try (Statement stmt = conn.createStatement()) {
+                            stmt.execute(statement.trim());
+                        }
+                    }
+                }
+
+                System.out.println("✅ nurse.sql 실행 완료");
+
+
+
 
 
             }

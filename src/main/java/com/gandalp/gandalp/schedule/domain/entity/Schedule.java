@@ -3,6 +3,8 @@ package com.gandalp.gandalp.schedule.domain.entity;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import org.springframework.cglib.core.Local;
+
 import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Room;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
@@ -44,12 +46,8 @@ public class Schedule extends BaseEntity {
 	@Column(nullable = false, length = 100)
 	private String content;
 
-	@Column(nullable = false)
 	private LocalDateTime startTime;
-
-	@Column(nullable = false)
 	private LocalDateTime endTime;
-
 	// 💡 Builder 수정: startTime, endTime을 시 단위로 절삭
 	@Builder
 	public Schedule(Nurse nurse, Category category, String content,
@@ -57,8 +55,8 @@ public class Schedule extends BaseEntity {
 		this.nurse = nurse;
 		this.category = category;
 		this.content = content;
-		this.startTime = startTime != null ? startTime.truncatedTo(ChronoUnit.HOURS) : null;
-		this.endTime = endTime != null ? endTime.truncatedTo(ChronoUnit.HOURS) : null;
+		this.startTime = startTime;
+		this.endTime = endTime;
 	}
 
 	
