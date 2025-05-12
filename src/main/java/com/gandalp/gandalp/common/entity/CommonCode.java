@@ -24,10 +24,10 @@ public class CommonCode {
     @Column(nullable = false, length = 50)
     private String codeGroup;
 
-    @Column(nullable = false, length = 50, unique = true)
+    @Column(nullable = false, length = 50)
     private String codeValue;
 
-    @Column(nullable = false, length = 50)
+    @Column(nullable = false, length = 50, unique = true)
     private String codeLabel;
 
 

@@ -4,5 +4,6 @@ public enum TempCategory {
 
     WORKING_TEMP,
     WAITING_OFF,
-    PROCESSED_OFF
+    ACCEPTED_OFF,
+    REJECTED_OFF
 }

@@ -63,6 +63,10 @@ public class ScheduleTemp extends BaseEntity {
     }
 
     public void acceptedOff(){
-        this.category = TempCategory.PROCESSED_OFF;
+        this.category = TempCategory.ACCEPTED_OFF;
+    }
+
+    public void rejectedOff(){
+        this.category = TempCategory.REJECTED_OFF;
     }
 }

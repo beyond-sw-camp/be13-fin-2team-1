@@ -32,8 +32,9 @@ INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value)
 INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value) VALUES
 -- schedule_temp_category 그룹
 (1, 'Y', 'schedule_temp_category', '근무 일정 대기', 'WORKING_TEMP'),
-(2, 'Y', 'schedule_temp_category', '대기중인 오프', 'WAITING_OFF'),
-(3, 'Y', 'schedule_temp_category', '처리된 오프', 'PROCESSED_OFF');
+(2, 'Y', 'schedule_temp_category', '대기중', 'WAITING_OFF'),
+(3, 'Y', 'schedule_temp_category', '승인', 'ACCEPTED_OFF'),
+(4, 'Y', 'schedule_temp_category', '반려', 'REJECTED_OFF');
 
 
 -- room 
