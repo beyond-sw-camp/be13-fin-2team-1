@@ -25,4 +25,6 @@ public class OffScheduleResponseDto {
     private LocalDateTime startTime;
 
     private LocalDateTime endTime;
+
+    private LocalDateTime updatedAt;
 }
