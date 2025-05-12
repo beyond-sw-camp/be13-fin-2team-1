@@ -62,6 +62,7 @@ public class ScheduleController {
     @Operation(summary = "전체 오프 조회")
     @GetMapping("/off/temp")
     public ResponseEntity<?> getAllOffScheduleTemp() {
+        System.out.println("전체 오프 조회");
         try {
             List<OffScheduleTempResponseDto> list = scheduleService.getAllOffScheduleTemp();
 

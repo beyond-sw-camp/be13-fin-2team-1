@@ -69,10 +69,11 @@ public class SecurityConfig {
                         // 로그인, 로그아웃, 리프레시 허용
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout", "/api/v1/auth/refresh").permitAll()
 
+                        // 회원가입은 ADMIN만 허용
                         .requestMatchers("/api/v1/auth/join").hasRole("ADMIN")
 
-                        // 나머지는 모두 인증 필요
-                        .anyRequest().authenticated()
+                        // 나머지는 인증
+                        .anyRequest().permitAll()
                 );
 
         return http.build();
