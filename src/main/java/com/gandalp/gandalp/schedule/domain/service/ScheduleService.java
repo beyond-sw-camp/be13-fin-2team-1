@@ -209,6 +209,30 @@ public class ScheduleService {
         }
     }
 
+    public OffScheduleResponseDto rejectOff(Long scheduleTempId) {
+        Optional<ScheduleTemp> scheduleTemp = scheduleTempRepository.findById(scheduleTempId);
+        if(scheduleTemp.isEmpty()) {
+            throw new RuntimeException("scheduleTemp is empty");
+        } else {
+
+            scheduleTemp.get().rejectedOff();
+
+            Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("schedule_temp_category",String.valueOf(scheduleTemp.get().getCategory()));
+            if(codeLabel.isEmpty()) throw new RuntimeException("Code Label is Empty");
+
+            OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
+                    .offScheduleId(scheduleTemp.get().getId())
+                    .nurseId(scheduleTemp.get().getNurse().getId())
+                    .codeLabel(codeLabel.get())
+                    .content(scheduleTemp.get().getContent())
+                    .startTime(scheduleTemp.get().getStartTime())
+                    .endTime(scheduleTemp.get().getEndTime())
+                    .build();
+
+            return offScheduleResponseDto;
+        }
+    }
+
     // 승인된 off CRUD
 
     public List<OffScheduleResponseDto> getOffSchedules(String email) {

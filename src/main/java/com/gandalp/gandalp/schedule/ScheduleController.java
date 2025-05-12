@@ -4,14 +4,7 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.entity.Status;
@@ -75,7 +68,8 @@ public class ScheduleController {
     }
 
     // 승인 대기 중인 오프 관리
-    // 임시 스케줄에 있는 오프 승인 시 -> 처리됨으로 바뀌고 스케쥴에 카테고리 승인된 오프로 바뀌고 삽입
+
+    // 임시 스케줄에 있는 오프 승인 시 -> 승인됨으로 바뀌고 스케쥴에 카테고리 승인된 오프로 바뀌고 삽입
     @PostMapping("/acceptOff/{schedule-temp-id}")
     @PreAuthorize("hasRole('HEAD_NURSE')")
     public ResponseEntity<?> acceptOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
@@ -87,7 +81,18 @@ public class ScheduleController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    // 임시 스케줄에 있는 오프 반려 시 -> 반려됨으로 바뀜
+    @PutMapping("/rejectOff/{schedule-temp-id}")
+    @PreAuthorize("hasRole('HEAD_NURSE')")
+    public ResponseEntity<?> rejectOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
+        try {
+            OffScheduleResponseDto offScheduleResponseDto = scheduleService.rejectOff(scheduleTempId);
+            return ResponseEntity.ok().body(offScheduleResponseDto);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     // 이메일과 비밀번호 체크
     @PostMapping("/check")
