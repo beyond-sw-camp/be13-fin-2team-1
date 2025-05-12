@@ -14,6 +14,8 @@ import com.gandalp.gandalp.member.domain.repository.MemberRepository;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -79,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(readOnly = true)
-    public TokenResponseDto login(LoginRequestDto dto) {
+    public TokenResponseDto login(LoginRequestDto dto, HttpServletResponse response) {
         String accountId = dto.getAccountId();
         String password = dto.getPassword();
 
@@ -92,6 +94,22 @@ public class AuthServiceImpl implements AuthService {
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAccountId(), member.getType().name());
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAccountId());
+
+        Cookie accessCookie = new Cookie("accessToken", accessToken);
+        accessCookie.setHttpOnly(true);
+        accessCookie.setSecure(true); // Https 환경이라면 true로 설정
+        accessCookie.setPath("/");
+        accessCookie.setMaxAge(15 * 60); // 15분
+
+        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
+        refreshCookie.setHttpOnly(true);
+        refreshCookie.setSecure(true); // Https 환경이라면 true로 설정
+        refreshCookie.setPath("/");
+        refreshCookie.setMaxAge(24 * 60 * 60); // 15분
+
+        response.addCookie(accessCookie);
+        response.addCookie(refreshCookie);
+
 
         return new TokenResponseDto(accessToken, refreshToken);
     }
