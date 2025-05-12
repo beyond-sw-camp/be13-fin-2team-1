@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
 	@JoinColumn(name = "department-id")
 	private Department department;
 
-	@Column(nullable = false, length = 50)
+	@Column(nullable = false, unique = true, length = 50)
 	private String accountId;
 
 	@Column(nullable = false)

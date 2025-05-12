@@ -1,11 +1,17 @@
 package com.gandalp.gandalp.auth;
 
+import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
 import com.gandalp.gandalp.auth.model.dto.JoinRequestDto;
 import com.gandalp.gandalp.auth.model.dto.LoginRequestDto;
 import com.gandalp.gandalp.auth.model.dto.TokenResponseDto;
 import com.gandalp.gandalp.auth.model.service.AuthService;
+import com.gandalp.gandalp.member.domain.entity.Member;
+import com.gandalp.gandalp.member.domain.repository.MemberRepository;
+import com.gandalp.gandalp.member.domain.service.MemberService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +35,8 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
-
+    private final MemberRepository memberRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Operation(summary = "회원가입")
     @PostMapping("/join")
@@ -53,12 +60,10 @@ public class AuthController {
      */
     @Operation(summary = "로그인")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto) {
-
+    public ResponseEntity<?> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
         TokenResponseDto tokenResponse = null;
-
         try {
-            tokenResponse = authService.login(dto);
+            tokenResponse = authService.login(dto, response);
 
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
