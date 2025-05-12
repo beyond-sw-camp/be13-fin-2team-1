@@ -29,6 +29,7 @@ import com.gandalp.gandalp.schedule.domain.service.SurgeryScheduleService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.client.HttpClientErrorException;
 
 @RestController
 @RequestMapping("/api/v1/schedules")
@@ -52,17 +53,17 @@ public class ScheduleController {
         return offScheduleTempResponseDto == null ? ResponseEntity.badRequest().build() : ResponseEntity.ok(offScheduleTempResponseDto);
     }
 
-    @DeleteMapping("/off")
-    public ResponseEntity<?> deleteOffSchedule(@RequestBody Long scheduleTempId) {
+    @DeleteMapping("/off/temp/{schedule-temp-id}")
+    public ResponseEntity<?> deleteOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
         try {
-            scheduleService.deleteOffScheduleTemp(scheduleTempId);
+            OffScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOffScheduleTemp(scheduleTempId);
+            return ResponseEntity.ok().body(offScheduleResponseDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/off")
+    @GetMapping("/off/temp")
     public ResponseEntity<?> getOffSchedule(String email) {
         List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
         try {
@@ -81,7 +82,8 @@ public class ScheduleController {
         try {
             OffScheduleResponseDto offScheduleResponseDto = scheduleService.acceptOff(scheduleTempId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -163,5 +165,27 @@ public class ScheduleController {
 
 
 
+    // 승인된 오프 삭제
+    @DeleteMapping("/off/{schedule-id}")
+    public ResponseEntity<?> deleteOff(@PathVariable("schedule-id") Long scheduleId){
+        try {
+            OffScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOff(scheduleId);
+            return ResponseEntity.ok().body(offScheduleResponseDto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
+    // 승인된 오프 조회
+    @GetMapping("/off")
+    public ResponseEntity<?> getOffScheduleByEmail(String email) {
+        try {
+            List<OffScheduleResponseDto> offScheduleResponseDtos = scheduleService.getOffSchedules(email);
+            return ResponseEntity.ok().body(offScheduleResponseDtos);
+        }
+        catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+    }
 }
