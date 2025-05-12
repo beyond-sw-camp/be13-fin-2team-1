@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.schedule.domain.repository;
 
+import com.gandalp.gandalp.member.domain.entity.Nurse;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,5 @@ public interface ScheduleTempRepository extends JpaRepository<ScheduleTemp, Long
     List<ScheduleTemp> findOverlappingTempSchedules(@Param("nurseId") Long nurseId,
                                                     @Param("startTime") LocalDateTime startTime,
                                                     @Param("endTime") LocalDateTime endTime);
+    List<ScheduleTemp> findByNurseIn(List<Nurse> nurseList);
 }
