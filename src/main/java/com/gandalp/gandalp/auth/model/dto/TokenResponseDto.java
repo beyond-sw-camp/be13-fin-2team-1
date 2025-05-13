@@ -10,6 +10,4 @@ import lombok.ToString;
 public class TokenResponseDto {
 
     private final String accessToken;
-
-    private final String refreshToken;
 }

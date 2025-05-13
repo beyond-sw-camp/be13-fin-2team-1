@@ -71,7 +71,7 @@ public class HospitalService {
             return new PageImpl<>(Collections.emptyList(), pageable, 0);
         }
 
-        return hospitalRepository.searchNearbyHospitals(nearbyHospitalIds, keyword, sortOption, pageable);
+        return hospitalRepository.searchNearbyHospitals(candidateIds, keyword, sortOption, pageable);
     }
 
 

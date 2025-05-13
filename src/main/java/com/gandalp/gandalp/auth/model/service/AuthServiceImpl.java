@@ -1,5 +1,8 @@
 package com.gandalp.gandalp.auth.model.service;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
 import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
 import com.gandalp.gandalp.auth.model.dto.JoinRequestDto;
@@ -15,10 +18,12 @@ import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -82,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(readOnly = true)
     public TokenResponseDto login(LoginRequestDto dto, HttpServletResponse response) {
+
         String accountId = dto.getAccountId();
         String password = dto.getPassword();
 
@@ -93,25 +99,23 @@ public class AuthServiceImpl implements AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAccountId(), member.getType().name());
+
+
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAccountId());
 
-        Cookie accessCookie = new Cookie("accessToken", accessToken);
-        accessCookie.setHttpOnly(true);
-//        accessCookie.setSecure(true); // Https 환경이라면 true로 설정
-        accessCookie.setPath("/");
-        accessCookie.setMaxAge(15 * 60); // 15분
+        // 보통 accessToken 은 body 로 전달해주고 refreshtoken은 httpOnly 쿠키로 전달해준다
+       ResponseCookie refreshCookie = ResponseCookie.from("refreshToken", refreshToken)
+           .httpOnly(true)
+           .secure(false) // HTTPS 환경으로 할거면 True로 변경
+           .path("/")
+           .maxAge(7 * 24 * 60 * 60)
+           .sameSite("Lax")
+           .build();
 
-        Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-        refreshCookie.setHttpOnly(true);
-//        refreshCookie.setSecure(true); // Https 환경이라면 true로 설정
-        refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(24 * 60 * 60); // 15분
-
-        response.addCookie(accessCookie);
-        response.addCookie(refreshCookie);
+       response.addHeader("Set-Cookie", refreshCookie.toString());
 
 
-        return new TokenResponseDto(accessToken, refreshToken);
+        return new TokenResponseDto(accessToken);
     }
 
     @Override
@@ -124,26 +128,47 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
 
+        // 1. accessToken 블랙리스트 등록
         jwtTokenProvider.addBlacklist(accessToken);
+
+        // 2. accountId 추출해서 refreshToken 삭제해주기
         jwtTokenProvider.deleteRefreshToken(accessToken);
+
     }
 
     @Override
     @Transactional(readOnly = true)
-    public TokenResponseDto refresh(String bearerToken) {
-        String refreshToken = jwtTokenProvider.resolveToken(bearerToken)
-                .orElseThrow(() -> new IllegalArgumentException("토큰이 존재하지 않습니다."));
+    public TokenResponseDto refresh(HttpServletRequest request) {
 
+        // 1. 쿠키에서 refreshToken 꺼내기
+        String refreshToken = extractTokenFromCookie(request, "refreshToken").orElseThrow(
+            () -> new IllegalArgumentException("Refresh Token 쿠키가 존재하지 않습니다.")
+        );
+
+
+        //  2. 토큰 유효성 검사
         if (!jwtTokenProvider.validateToken(refreshToken)) {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
         }
 
+        // 3. 사용자 정보 추출 및 accessToken 재발급
         Member member = memberRepository.findByAccountId(jwtTokenProvider.getUserName(refreshToken))
                 .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAccountId(), member.getType().name());
 
-        return new TokenResponseDto(accessToken, refreshToken);
+        return new TokenResponseDto(accessToken);
+    }
+
+    // 토큰 추출 유틸 메서드
+    private Optional<String> extractTokenFromCookie(HttpServletRequest request, String cookieName){
+        if (request.getCookies() == null)
+            return Optional.empty();
+
+        return Arrays.stream(request.getCookies())
+            .filter(cookie -> cookieName.equals(cookie.getName()))
+            .map(Cookie::getValue)
+            .findFirst();
     }
 
     @Override

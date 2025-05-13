@@ -19,14 +19,14 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry){
         registry.addEndpoint("/connect")
-                .setAllowedOrigins("http://localhost:5174")
+                .setAllowedOrigins("http://localhost:5173")
                 .withSockJS();
     }
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry){
         // /publish/1 형태로 메시지를 발행해야 함을 설정
-        // /publish 로 시작하는 url 패턴으로 메시지가 발행되면 @Controller 객체의 @MessageMappin 메소드로 라우팅 된다.
+        // /publish 로 시작하는 url 패턴으로 메시지가 발행되면 @Controller 객체의 @MessageMapping 메소드로 라우팅 된다.
 
         registry.setApplicationDestinationPrefixes("/app");
 

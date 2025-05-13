@@ -31,6 +31,7 @@ public class JwtTokenProvider {
     private static final long ACCESS_TOKEN_EXP = 1000L * 60L * 15L; // 15분
     private static final long REFRESH_TOKEN_EXP = 1000L * 60L * 60L * 24L; // 1일
 
+
     public JwtTokenProvider(
             @Value("${springboot.jwt.secret}") String secret,
             UserDetailsService userDetailsService,

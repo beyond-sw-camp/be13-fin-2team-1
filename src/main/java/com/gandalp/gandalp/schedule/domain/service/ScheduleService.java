@@ -22,6 +22,7 @@ import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleTempRepository;
 import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
 
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.ResponseEntity;
@@ -102,12 +103,14 @@ public class ScheduleService {
 
 
     public NurseResponseDto checkPassword(String password, String email) {
-        Optional<Nurse> nurse = nurseRepository.findByPasswordAndEmail(password, email);
+        Nurse nurse = nurseRepository.findByEmail(email).orElseThrow(
+            ()-> new EntityNotFoundException("해당 간호사가 존재하지 않습니다.")
+        );
         NurseResponseDto nurseResponseDto = null;
-        if (nurse.isPresent() && passwordEncoder.matches(password, nurse.get().getPassword())) {
+        if (passwordEncoder.matches(password, nurse.getPassword())) {
             nurseResponseDto = NurseResponseDto.builder()
-                    .name(nurse.get().getName())
-                    .email(nurse.get().getEmail())
+                    .name(nurse.getName())
+                    .email(nurse.getEmail())
                     .build();
         } else {
             throw new RuntimeException("nurse is empty or password is wrong");

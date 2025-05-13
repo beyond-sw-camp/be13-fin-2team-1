@@ -11,11 +11,13 @@ import com.gandalp.gandalp.member.domain.service.MemberService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,10 +80,20 @@ public class AuthController {
      */
     @Operation(summary = "로그아웃")
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken) {
+    public ResponseEntity<?> logout(@RequestHeader("Authorization") String bearerToken, HttpServletResponse response) {
 
         try{
             authService.logout(bearerToken);
+
+            // refresh 쿠키 삭제 !!
+            ResponseCookie deleteCookie = ResponseCookie.from("refreshToken", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+
+            response.addHeader("Set-Cookie", deleteCookie.toString());
+
         }catch (Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -93,10 +105,10 @@ public class AuthController {
      * Refresh 토큰으로 Access Token 재발급
      */
     @PostMapping("/refresh")
-    public ResponseEntity<?> refresh(@RequestHeader("Authorization") String bearerToken) {
+    public ResponseEntity<?> refresh(HttpServletRequest request) {
         TokenResponseDto tokenResponse = null;
         try{
-            tokenResponse = authService.refresh(bearerToken);
+            tokenResponse = authService.refresh(request);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -109,7 +121,7 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("message", message);
         response.put("accessToken", tokenResponse.getAccessToken());
-        response.put("refreshToken", tokenResponse.getRefreshToken());
+        // response.put("refreshToken", tokenResponse.getRefreshToken());
         return response;
     }
 
