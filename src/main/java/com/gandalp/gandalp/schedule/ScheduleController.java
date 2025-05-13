@@ -83,10 +83,34 @@ public class ScheduleController {
         List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
         try {
             offScheduleTempResponseDtos = scheduleService.getOffScheduleTemp(email);
+
+            // 페이징 없으면 hasMore=false 고정
+            Map<String, Object> response = Map.of(
+                    "items", offScheduleTempResponseDtos,
+                    "hasMore", false
+            );
+            return ResponseEntity.ok().body(offScheduleTempResponseDtos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(offScheduleTempResponseDtos);
+
+    }
+
+    @GetMapping("/off/temp/nurse/name")
+    public ResponseEntity<?> getOffScheduleByName(String name) {
+        List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
+        try {
+            offScheduleTempResponseDtos = scheduleService.getOffScheduleTempByName(name);
+            // 페이징 없으면 hasMore=false 고정
+            Map<String, Object> response = Map.of(
+                    "items", offScheduleTempResponseDtos,
+                    "hasMore", false
+            );
+            return ResponseEntity.ok().body(offScheduleTempResponseDtos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
     }
 
     // 승인 대기 중인 오프 관리
