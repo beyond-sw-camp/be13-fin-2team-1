@@ -24,4 +24,6 @@ public interface ScheduleTempRepository extends JpaRepository<ScheduleTemp, Long
                                                     @Param("startTime") LocalDateTime startTime,
                                                     @Param("endTime") LocalDateTime endTime);
     List<ScheduleTemp> findByNurseIn(List<Nurse> nurseList);
+
+    List<ScheduleTemp> findAllByNurse(Nurse nurse);
 }
