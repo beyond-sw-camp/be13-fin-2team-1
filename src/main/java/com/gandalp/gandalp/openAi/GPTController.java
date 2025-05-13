@@ -12,6 +12,7 @@ public class GPTController {
 
     private final OpenAIService openAIService;
 
+
     @GetMapping("/test")
     public String testGpt() {
         return openAIService.askQuestion("대한민국의 수도는 어디인가?");

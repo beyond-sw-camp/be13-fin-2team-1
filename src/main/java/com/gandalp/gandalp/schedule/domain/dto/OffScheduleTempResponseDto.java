@@ -17,11 +17,13 @@ public class OffScheduleTempResponseDto {
 
     private final String nurseName;
 
-    private final TempCategory category;
+    private final String codeLabel;
 
     private final String content;
 
     private final LocalDateTime startTime;
 
     private final LocalDateTime endTime;
+
+    private final LocalDateTime updatedAt;
 }
