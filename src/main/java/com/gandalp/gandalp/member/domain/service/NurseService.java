@@ -72,6 +72,9 @@ public class NurseService {
 		// 1. 로그인했는지 검증
 		authService.getLoginMember();
 
+		log.info("login 완료");
+
+
 		// 2. 이메일 + 비밀번호로 본인 인증
 		NurseResponseDto nurseDto = scheduleService.checkPassword(request.getPassword(), request.getEmail());
 
@@ -79,17 +82,18 @@ public class NurseService {
 			throw new IllegalArgumentException("해당 간호사가 존재하지 않습니다.");
 		}
 
+		log.info("nurseDto "+ nurseDto.toString());
 		// 3. 이메일로 해당 nurse가 존재하는지 검증
 		Nurse nurse = nurseRepository.findByEmail(nurseDto.getEmail()).orElseThrow(
 			() -> new EntityNotFoundException("해당 간호사가 존재하지 않습니다.")
 		);
-
+		log.info("nurse "+ nurse.toString());
 		Status workingStatus = request.getWorkingStatus();
 
 
 		// 4. 근무 상태 수정
 		nurse.updateWorkingStatus(workingStatus);
-
+		log.info("수정! ");
 
 		return new NurseCurrentStatusDto(nurse);
 	}

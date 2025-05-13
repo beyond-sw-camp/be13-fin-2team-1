@@ -5,6 +5,7 @@ import com.gandalp.gandalp.auth.model.dto.LoginRequestDto;
 import com.gandalp.gandalp.auth.model.dto.TokenResponseDto;
 import com.gandalp.gandalp.member.domain.entity.Member;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 public interface AuthService {
@@ -16,7 +17,7 @@ public interface AuthService {
 
     void logout(String bearerToken);
 
-    TokenResponseDto refresh(String bearerToken);
+    TokenResponseDto refresh(HttpServletRequest request);
 
     Member getLoginMember();
 
