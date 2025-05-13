@@ -99,13 +99,13 @@ public class AuthServiceImpl implements AuthService {
         accessCookie.setHttpOnly(true);
 //        accessCookie.setSecure(true); // Https 환경이라면 true로 설정
         accessCookie.setPath("/");
-        accessCookie.setMaxAge(15 * 60); // 15분
+        accessCookie.setMaxAge(60 * 60 * 24 * 30); // 1달
 
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
 //        refreshCookie.setSecure(true); // Https 환경이라면 true로 설정
         refreshCookie.setPath("/");
-        refreshCookie.setMaxAge(24 * 60 * 60); // 15분
+        refreshCookie.setMaxAge(60 * 60 * 24 * 30); // 1달
 
         response.addCookie(accessCookie);
         response.addCookie(refreshCookie);
