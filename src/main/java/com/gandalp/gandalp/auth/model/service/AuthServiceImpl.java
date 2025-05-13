@@ -100,7 +100,6 @@ public class AuthServiceImpl implements AuthService {
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAccountId(), member.getType().name());
 
-
         String refreshToken = jwtTokenProvider.createRefreshToken(member.getAccountId());
 
         // 보통 accessToken 은 body 로 전달해주고 refreshtoken은 httpOnly 쿠키로 전달해준다
