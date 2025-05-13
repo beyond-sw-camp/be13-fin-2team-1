@@ -23,19 +23,21 @@ public class QHospital extends EntityPathBase<Hospital> {
 
     public final StringPath address = createString("address");
 
+    public final NumberPath<Integer> availableErCount = createNumber("availableErCount", Integer.class);
+
     //inherited
     public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
     //inherited
     public final StringPath createdBy = _super.createdBy;
 
-    public final NumberPath<Integer> erCount = createNumber("erCount", Integer.class);
-
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final StringPath name = createString("name");
 
     public final StringPath phoneNumber = createString("phoneNumber");
+
+    public final NumberPath<Integer> totalErCount = createNumber("totalErCount", Integer.class);
 
     //inherited
     public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
