@@ -30,8 +30,18 @@ public class Hospital extends BaseEntity {
 	private String address;
 
 	@Column(nullable = false)
-	private int erCount;
+	private int totalErCount;
+
+	@Column(nullable = false)
+	private int availableErCount;
 
 	@Column(nullable = false, length = 20)
 	private String phoneNumber;
+
+	public void updateAvailableErCount(int count) {
+		if( count < 0 )
+			throw new IllegalArgumentException("응급실 병상 수가 0개 미만일 수 없습니다. ");
+
+		this.availableErCount = count;
+	}
 }

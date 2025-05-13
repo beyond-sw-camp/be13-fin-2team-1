@@ -13,12 +13,12 @@ INSERT INTO member (
     `hospital-id`, `department-id`, `account_id`, `password`, `type`,
     `created_at`, `updated_at`, `created_by`, `updated_by`
 ) VALUES (
-             51, 1, 'headnurse', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'HEAD_NURSE',
+             1, 1, 'headnurse', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'HEAD_NURSE',
              NOW(), NOW(), 'admin', 'admin');
 
 INSERT INTO member (
     `hospital-id`, `department-id`, `account_id`, `password`, `type`,
     `created_at`, `updated_at`, `created_by`, `updated_by`
 ) VALUES (
-             51, 1, 'nurse', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'NURSE',
+             1, 1, 'nurse', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'NURSE',
              NOW(), NOW(), 'admin', 'admin');
