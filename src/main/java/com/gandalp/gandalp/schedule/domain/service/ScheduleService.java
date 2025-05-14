@@ -22,7 +22,6 @@ import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleTempRepository;
 import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 import org.springframework.http.ResponseEntity;
@@ -63,11 +62,6 @@ public class ScheduleService {
         LocalDateTime start = scheduleRequestDto.getStartTime().truncatedTo(ChronoUnit.HOURS);
         LocalDateTime end = scheduleRequestDto.getEndTime().truncatedTo(ChronoUnit.HOURS);
 
-
-        if(start.isEqual(end) || start.isAfter(end)) {
-            throw new IllegalStateException("올바른 시간대가 아닙니다.");
-        }
-
         // 시간 겹치는 기존 스케줄 존재 여부 확인
         boolean hasConflict = !scheduleTempRepository
                 .findOverlappingTempSchedules(nurse.getId(), start, end)
@@ -103,14 +97,13 @@ public class ScheduleService {
 
 
     public NurseResponseDto checkPassword(String password, String email) {
-        Nurse nurse = nurseRepository.findByEmail(email).orElseThrow(
-            ()-> new EntityNotFoundException("해당 간호사가 존재하지 않습니다.")
-        );
+        Optional<Nurse> nurse = nurseRepository.findByEmail(email);
         NurseResponseDto nurseResponseDto = null;
-        if (passwordEncoder.matches(password, nurse.getPassword())) {
+        if (nurse.isPresent() && passwordEncoder.matches(password, nurse.get().getPassword())) {
             nurseResponseDto = NurseResponseDto.builder()
-                    .name(nurse.getName())
-                    .email(nurse.getEmail())
+                    .nurseId(nurse.get().getId())
+                    .name(nurse.get().getName())
+                    .email(nurse.get().getEmail())
                     .build();
         } else {
             throw new RuntimeException("nurse is empty or password is wrong");
@@ -137,6 +130,21 @@ public class ScheduleService {
                     .build();
 
             scheduleTempRepository.deleteById(scheduleTempId);
+
+            if(scheduleTemp.get().getCategory() == TempCategory.ACCEPTED_OFF) {
+
+                Optional<Nurse> nurse = nurseRepository.findById(scheduleTemp.get().getNurse().getId());
+                if(nurse.isEmpty()) throw new RuntimeException("nurse is empty");
+
+                Optional<Schedule> schedule = scheduleRepository.findByNurseAndStartTimeAndCategory(nurse.get(), offScheduleResponseDto.getStartTime(), Category.ACCEPTED_OFF);
+
+                if(schedule.isPresent()) {
+                    scheduleRepository.deleteById(schedule.get().getId());
+                    System.out.println("삭제 성공");
+                } else {
+                    throw new RuntimeException("schedule is empty");
+                }
+            }
 
             return offScheduleResponseDto;
 
