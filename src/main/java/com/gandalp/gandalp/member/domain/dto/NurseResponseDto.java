@@ -8,20 +8,18 @@ import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 @Builder
 public class NurseResponseDto {
 
+    private final Long nurseId;
 
-    private String name;
+    private final String name;
 
-    private String email;
+    private final String email;
 
-
-    public NurseResponseDto(Nurse nurse){
+    public NurseResponseDto(Nurse nurse) {
+        this.nurseId = nurse.getId();
         this.name = nurse.getName();
         this.email = nurse.getEmail();
     }
-
-
 }

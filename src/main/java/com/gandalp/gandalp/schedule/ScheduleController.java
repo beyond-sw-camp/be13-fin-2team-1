@@ -146,13 +146,13 @@ public class ScheduleController {
     @Operation(summary = "이메일과 비밀번호 체크")
     @PostMapping("/check")
     public ResponseEntity<?> checkPassword(String password, String email) {
-        NurseResponseDto nurseResponseDto = null;
         try {
-            nurseResponseDto = scheduleService.checkPassword(password, email);
+            NurseResponseDto nurseResponseDto = scheduleService.checkPassword(password, email);
+            return ResponseEntity.ok().body(nurseResponseDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        return ResponseEntity.ok().body(nurseResponseDto);
+
     }
 
 
