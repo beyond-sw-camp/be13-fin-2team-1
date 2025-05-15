@@ -1,18 +1,11 @@
 package com.gandalp.gandalp.shift.domain.entity;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.entity.Member;
-
+import com.gandalp.gandalp.shift.domain.dto.ShiftUpdateDto;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,13 +18,16 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Board extends BaseEntity {
-
+public class Board {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -49,13 +45,41 @@ public class Board extends BaseEntity {
 	@Column(nullable = false, length = 200)
 	private String content;
 
+	@Builder.Default
+	@Column(nullable = false, name = "board_status")
+	private String boardStatus = "Waiting";
+
+
 	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private BoardStatus boardStatus;
+	private LocalDateTime createdAt;
+
+	@Column(length = 30)
+	private String createdBy;
+
+	@Column
+	private LocalDateTime updatedAt;
+
+	@Column(length = 30)
+	private String updatedBy;
 
 	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Comment> comments = new ArrayList<>();
 
 
+	@Builder
+	public Board(ShiftUpdateDto shiftUpdateDto, Member member, Department department) {
+		this.content = shiftUpdateDto.getContent();
+		this.member = member;
+		this.department = department;
+
+	}
+
+
+	public void update(ShiftUpdateDto shiftUpdateDto, String updatedByAccountId) {
+		this.content = shiftUpdateDto.getContent();
+		this.updatedAt = LocalDateTime.now();
+		this.updatedBy = updatedByAccountId;
+
+	}
 
 }
