@@ -1,7 +1,22 @@
 package com.gandalp.gandalp.shift.domain.repository;
 
-import org.springframework.stereotype.Repository;
+import com.gandalp.gandalp.hospital.domain.entity.Department;
+import com.gandalp.gandalp.shift.domain.entity.Board;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-@Repository
-public interface ShiftRepository {
+import java.util.List;
+import java.util.Optional;
+
+public interface ShiftRepository extends JpaRepository<Board, Long>, ShiftRepositoryCustom {
+
+    @Query("SELECT b FROM Board b LEFT JOIN FETCH b.comments WHERE b.id = :boardId")
+    Optional<Board> findByIdWithComments(@Param("boardId") Long boardId);
+
+    Page<Board> findAllByDepartment(Department department, Pageable pageable);
+
+
 }
