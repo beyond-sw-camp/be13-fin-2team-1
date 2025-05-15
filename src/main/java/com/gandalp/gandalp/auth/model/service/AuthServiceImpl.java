@@ -13,7 +13,6 @@ import com.gandalp.gandalp.hospital.domain.entity.Hospital;
 import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalRepository;
 import com.gandalp.gandalp.member.domain.entity.Member;
-import com.gandalp.gandalp.member.domain.entity.Type;
 import com.gandalp.gandalp.member.domain.repository.MemberRepository;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 
@@ -58,18 +57,17 @@ public class AuthServiceImpl implements AuthService {
         // 비밀번호 암호화
         String encodedPassword = passwordEncoder.encode(password);
 
-        Hospital hospital = null;
-        Department department = null;
 
-        // 응급대원이 아닌 경우  병원과 부서 조회
-        if (dto.getType() != Type.PARAMEDIC) {
-            // paramedic이 아니면 조회
-            hospital = hospitalRepository.findByName(dto.getHospital())
-                    .orElseThrow(() -> new EntityNotFoundException("해당하는 병원이 없습니다."));
-            department = departmentRepository.findByNameAndHospital(dto.getDepartment(), hospital)
-                    .orElseThrow(() -> new IllegalArgumentException("해당하는 부서가 없습니다."));
-        }
+        // 병원 엔티티
+        Hospital hospital = hospitalRepository.findByName(dto.getHospital()).orElseThrow(
+                () -> new EntityNotFoundException("해당하는 병원이 없습니다.")
+        );
 
+
+        // 부서
+        Department department = departmentRepository.findByNameAndHospital(dto.getDepartment(), hospital).orElseThrow(
+                () -> new IllegalArgumentException("해당하는 부서가 없습니다.")
+        );
 
 
         Member member = Member.builder()

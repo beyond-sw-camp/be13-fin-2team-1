@@ -12,7 +12,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,6 +74,7 @@ public class ShiftController {
             @PageableDefault(size = 10, page = 0) Pageable pageable){
 
         try {
+
             Page<ShiftResponseDto> allShifts = shiftService.getSearchingAll(keyword, searchOption, pageable);
             return ResponseEntity.ok().body(allShifts);
         } catch (Exception e) {
@@ -83,13 +86,11 @@ public class ShiftController {
     @Operation(summary = "교대 요청 글 목록 기본 조회", description = "교대 요청 글 리스트 기본 조회")
     @GetMapping
     public ResponseEntity<?> showShiftsByMember(
-            @PageableDefault(size = 10) Pageable pageable) {
-        try {
-            Page<ShiftResponseDto> shifts = shiftService.getAll(pageable);
-            return ResponseEntity.ok().body(shifts);
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")); // boardId 기준 역순
+        Page<ShiftResponseDto> shifts = shiftService.getAll(pageable);
+        return ResponseEntity.ok().body(shifts);
     }
 
     @Operation(summary = "교대 요청 글 단건 상세 조회", description = "boardId로 교대 요청 글 & 댓글 조회")
