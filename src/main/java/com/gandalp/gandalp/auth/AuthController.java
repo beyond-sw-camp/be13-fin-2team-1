@@ -6,6 +6,7 @@ import com.gandalp.gandalp.auth.model.dto.LoginRequestDto;
 import com.gandalp.gandalp.auth.model.dto.TokenResponseDto;
 import com.gandalp.gandalp.auth.model.service.AuthService;
 import com.gandalp.gandalp.member.domain.entity.Member;
+import com.gandalp.gandalp.member.domain.entity.Type;
 import com.gandalp.gandalp.member.domain.repository.MemberRepository;
 import com.gandalp.gandalp.member.domain.service.MemberService;
 
@@ -44,6 +45,12 @@ public class AuthController {
     @PostMapping("/join")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> join(@Valid @RequestBody JoinRequestDto dto) {
+
+        if (dto.getType() == Type.PARAMEDIC) {
+            dto.setHospital(null);
+            dto.setDepartment(null);
+        }
+
         Map<String, String> response = new HashMap<>();
         try{
             authService.join(dto);
