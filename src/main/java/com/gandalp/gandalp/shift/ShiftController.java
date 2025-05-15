@@ -129,6 +129,7 @@ public class ShiftController {
 
         try {
             shiftService.deleteShift(boardId);
+            //얍
 
 //            return ResponseEntity.status(HttpStatus.OK).body("교대 요청 글이 삭제되었습니다.");
             return ResponseEntity.ok().body("교대 요청 글이 삭제되었습니다.");
