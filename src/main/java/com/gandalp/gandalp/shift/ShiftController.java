@@ -49,7 +49,7 @@ public class ShiftController {
 
     // 교대 글 C
     @Operation(summary = "교대 요청 글 등록", description = "교대 요청 글 등록")
-    @PostMapping("")
+    @PostMapping("/create")
     public ResponseEntity<?> createShift(
             @RequestBody @Valid ShiftCreateRequestDto shiftCreateRequestDto) {
 
