@@ -1,8 +1,10 @@
 package com.gandalp.gandalp.member.domain.repository;
 
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
+import com.gandalp.gandalp.member.domain.entity.NurseSearchOption;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
@@ -25,12 +27,12 @@ public class NurseRepositoryImpl implements NurseRepositoryCustom {
     }
 
     @Override
-    public Page<NurseResponseDto> getAll(String keyword, Pageable pageable, Long departmentId ) {
+    public Page<NurseResponseDto> getAll(String keyword, NurseSearchOption searchOption, Pageable pageable, Long departmentId ) {
 
         BooleanBuilder search = new BooleanBuilder();
 
         if (keyword != null && !keyword.isBlank()) {
-            search.and(nurse.name.contains(keyword));
+            search.and(searchOption(searchOption, keyword));
         }
 
         if (departmentId != null) {
@@ -39,6 +41,7 @@ public class NurseRepositoryImpl implements NurseRepositoryCustom {
 
         List<NurseResponseDto> nurseList = queryFactory
                 .select(Projections.constructor(NurseResponseDto.class,
+                        nurse.id,
                         nurse.name,
                         nurse.email
                 ))
@@ -56,6 +59,21 @@ public class NurseRepositoryImpl implements NurseRepositoryCustom {
         return PageableExecutionUtils.getPage(nurseList, pageable, totalCount::fetchOne);
     }
 
+    private BooleanExpression searchOption(NurseSearchOption searchOption, String keyword){
+        if (searchOption == null || keyword == null){
+            return null;
+        }
+
+
+        if (searchOption == NurseSearchOption.NAME){
+            return nurse.name.contains(keyword);
+        }
+        else if(searchOption == NurseSearchOption.EMAIL){
+            return nurse.email.contains(keyword);
+        }
+
+        return null;
+    }
 
 
 }

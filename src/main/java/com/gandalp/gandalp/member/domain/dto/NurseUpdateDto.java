@@ -15,5 +15,4 @@ public class NurseUpdateDto {
 
     private String email;
 
-    private String password;
 }
