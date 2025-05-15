@@ -17,22 +17,24 @@ public class MemberResponseDto {
 
     private Long id;
 
-    private Hospital hospital;
+    private String hospitalName;
 
-    private Department department;
+    private String departmentName;
 
     private String accountId;
-
-    private String password;
 
     private Type type;
 
     public MemberResponseDto(Member member){
         this.id = member.getId();
-        this.hospital = member.getHospital();
-        this.department = member.getDepartment();
+        this.hospitalName = member.getHospital() != null
+                ? member.getHospital().getName()
+                : null;
+        this.departmentName = member.getDepartment() != null
+                ? member.getDepartment().getName()
+                : null;
         this.accountId = member.getAccountId();
-        this.password = member.getPassword();
+
         this.type = member.getType();
     }
 
