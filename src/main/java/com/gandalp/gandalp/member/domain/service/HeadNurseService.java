@@ -8,6 +8,8 @@ import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.dto.NurseUpdateDto;
 import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
+import com.gandalp.gandalp.member.domain.entity.NurseSearchOption;
+import com.gandalp.gandalp.member.domain.entity.Status;
 import com.gandalp.gandalp.member.domain.repository.MemberRepository;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -58,6 +60,7 @@ public class HeadNurseService {
                             .name(reqDto.getName())
                             .email(reqDto.getEmail())
                             .password(password)
+                            .workingStatus(Status.OFF)
                             .build();
 
 
@@ -110,15 +113,23 @@ public class HeadNurseService {
 
 
     // 모든 간호사 조회 (수간호사 모두 가능) -> 페이징 처리
-    public Page<NurseResponseDto> getAll(String keyword, Pageable pageable){
+    public Page<NurseResponseDto> getAll(String keyword, NurseSearchOption searchOption, Pageable pageable){
 
         Member loginMember = authService.getLoginMember();
         Long deptId = loginMember.getDepartment().getId();
 
-        Page<NurseResponseDto> nurseList = nurseRepository.getAll(keyword, pageable, deptId);
+        Page<NurseResponseDto> nurseList = nurseRepository.getAll(keyword, searchOption, pageable, deptId);
 
         return nurseList;
     }
 
+    public NurseResponseDto getOneNurse(Long nurseId){
+
+       // 1. 간호사 조회
+       Nurse nurse = nurseRepository.findById(nurseId).orElseThrow(
+               () -> new EntityNotFoundException("해당하는 간호사가 존재하지 않습니다.")
+       );
+       return new NurseResponseDto(nurse);
+    }
 
 }
