@@ -49,6 +49,9 @@ dependencies {
 	// json 데이터 파싱, 조작
 	implementation 'org.json:json:20230227'
 
+	//stomp
+	implementation 'org.springframework:spring-messaging'
+
 	// redis
 	implementation("org.springframework.boot:spring-boot-starter-data-redis")
 

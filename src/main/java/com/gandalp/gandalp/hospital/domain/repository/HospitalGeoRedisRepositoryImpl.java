@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,13 +32,13 @@ public class HospitalGeoRedisRepositoryImpl implements HospitalGeoRedisRepositor
         redisTemplate.opsForGeo().add(GEO_KEY, new Point(lon, lat), hospitalId.toString());
     }
 
-    // direction으로 도로상 가까운 병원 id 조회
+    // redis에서 가까운 병원 id 후보 50개 조회
     @Override
     public List<Long> findNearbyHospitalIds(double lat, double lon, int count){
-
+        log.info("▶ findNearbyHospitalIds 호출: 위도={}, 경도={}, limit={}", lat, lon, count);
         Circle radius = new Circle(
-                new Point(lat, lon),
-                new Distance(Double.MAX_VALUE, RedisGeoCommands.DistanceUnit.KILOMETERS) // 반경 10km 내에서 검색
+                new Point(lon, lat),
+                new Distance(20_000, RedisGeoCommands.DistanceUnit.KILOMETERS) // 반경 10km 내에서 검색
                 // redis가 반경없이 조회하는 api를 제공하지 않음
         );
 
@@ -62,5 +63,23 @@ public class HospitalGeoRedisRepositoryImpl implements HospitalGeoRedisRepositor
         return results.getContent().stream()
                 .map(r -> Long.valueOf(r.getContent().getName())) // 저장된 병원 ID 추출
                 .collect(Collectors.toList());
+    }
+
+
+
+    // 좌표 돌려주는 메서드
+    @Override
+    public List<Point> findLocationsByIds(List<Long> hospitalIds) {
+        if (hospitalIds == null || hospitalIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+        // RedisGeoOperations.position()은 입력한 순서대로 Point 리스트를 돌려줍니다.
+        String[] members = hospitalIds.stream()
+                .map(String::valueOf)
+                .toArray(String[]::new);
+        List<Point> points = redisTemplate.opsForGeo()
+                .position(GEO_KEY, members);
+        // (null이 올 수도 있으니, 필요하다면 필터링 or 예외 처리)
+        return points;
     }
 }
