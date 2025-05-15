@@ -22,27 +22,21 @@ public class QComment extends EntityPathBase<Comment> {
 
     public static final QComment comment = new QComment("comment");
 
-    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
-
     public final QBoard board;
 
     public final StringPath content = createString("content");
 
-    //inherited
-    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
+    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
 
-    //inherited
-    public final StringPath createdBy = _super.createdBy;
+    public final StringPath createdBy = createString("createdBy");
 
     public final NumberPath<Long> id = createNumber("id", Long.class);
 
     public final com.gandalp.gandalp.member.domain.entity.QMember member;
 
-    //inherited
-    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
 
-    //inherited
-    public final StringPath updatedBy = _super.updatedBy;
+    public final StringPath updatedBy = createString("updatedBy");
 
     public QComment(String variable) {
         this(Comment.class, forVariable(variable), INITS);

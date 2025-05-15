@@ -19,6 +19,8 @@ import static com.gandalp.gandalp.shift.domain.entity.QBoard.board;
 import static com.gandalp.gandalp.common.entity.QCommonCode.commonCode;
 
 
+
+
 @Repository
 public class ShiftRepositoryImpl implements ShiftRepositoryCustom {
 
