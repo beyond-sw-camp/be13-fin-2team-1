@@ -61,7 +61,6 @@ public class Nurse extends BaseEntity {
 	public void update(NurseUpdateDto updateDto){
 		this.name = updateDto.getName();
 		this.email = updateDto.getEmail();
-		this.password = updateDto.getPassword();
 	}
 
 	public void updateWorkingStatus(Status workingStatus) {

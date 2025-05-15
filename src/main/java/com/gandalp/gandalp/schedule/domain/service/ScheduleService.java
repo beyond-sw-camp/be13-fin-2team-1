@@ -101,7 +101,7 @@ public class ScheduleService {
         NurseResponseDto nurseResponseDto = null;
         if (nurse.isPresent() && passwordEncoder.matches(password, nurse.get().getPassword())) {
             nurseResponseDto = NurseResponseDto.builder()
-                    .nurseId(nurse.get().getId())
+                    .id(nurse.get().getId())
                     .name(nurse.get().getName())
                     .email(nurse.get().getEmail())
                     .build();
