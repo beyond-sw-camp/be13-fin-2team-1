@@ -1,11 +1,11 @@
 package com.gandalp.gandalp.hospital.domain.service;
-
+import org.json.JSONObject;
+import org.json.JSONArray;
 import com.gandalp.gandalp.hospital.domain.dto.GeoResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONObject;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -96,7 +96,7 @@ public class NaverMapClient {
             JSONArray addresses = result.getJSONArray("addresses");
 
             // 주소 결과가 없는 경우 예외
-            if(addresses.isEmpty()){
+            if(addresses.length() == 0){
                 throw new EntityNotFoundException("해당 주소에 대한 좌표 정보를 찾을 수 없습니다." + address);
             }
 
