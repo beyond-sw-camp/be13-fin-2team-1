@@ -15,6 +15,7 @@ import com.gandalp.gandalp.shift.domain.dto.ShiftDetailsResponseDto;
 import com.gandalp.gandalp.shift.domain.dto.ShiftResponseDto;
 import com.gandalp.gandalp.shift.domain.dto.ShiftUpdateDto;
 import com.gandalp.gandalp.shift.domain.entity.Board;
+import com.gandalp.gandalp.shift.domain.entity.BoardStatus;
 import com.gandalp.gandalp.shift.domain.entity.Comment;
 import com.gandalp.gandalp.shift.domain.entity.SearchOption;
 import com.gandalp.gandalp.shift.domain.repository.CommentRepository;
@@ -27,7 +28,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -95,12 +98,12 @@ public class ShiftServiceImpl implements ShiftService {
     // 공통 코드 변환 메서드
     private ShiftResponseDto toDto(Board board) {
         String label = commonCodeRepository
-                .findByCodeGroupAndCodeValue("board_status", board.getBoardStatus())
+                .findByCodeGroupAndCodeValue("board_status", String.valueOf(board.getBoardStatus()))
                 .map(CommonCode::getCodeLabel)
                 .orElse(null);
 
         // 라벨을 포함하는 생성자(혹은 setter)로 DTO 생성
-        ShiftResponseDto dto = new ShiftResponseDto(board);
+        ShiftResponseDto dto = new ShiftResponseDto(board, label);
         dto.setBoardStatusLabel(label);
         return dto;
     }
@@ -112,14 +115,14 @@ public class ShiftServiceImpl implements ShiftService {
         Member member = authService.getLoginMember();
         Department department = member.getDepartment();
 
+        List<Comment> comments = new ArrayList<>();
+
         // DTO -> entity 로 변환
         // createAt = 입력한 memberid의 회원의 accountid
         Board board = Board.builder()
                 .content(shiftCreateRequestDto.getContent())
-//                .boardStatus(shiftCreateRequestDto.getBoardStatus())
-                .createdAt(LocalDateTime.now())
-                .createdBy(member.getAccountId())
-                .comments(null)
+                .boardStatus(BoardStatus.Waiting)
+                .comments(comments)
                 .department(department)
                 .member(member)
                 .build();
@@ -127,8 +130,14 @@ public class ShiftServiceImpl implements ShiftService {
         // repository 에 entity 저장
         shiftRepository.save(board);
 
+        Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("board_status", String.valueOf(board.getBoardStatus()));
+
+        if(codeLabel.isEmpty()) {
+            throw new RuntimeException("codeLabel is empty");
+        }
+
         // entity -> responseDto 로 변환 후 반환
-        return new ShiftResponseDto(board);
+        return new ShiftResponseDto(board,codeLabel.get());
 
     }
 
@@ -182,10 +191,16 @@ public class ShiftServiceImpl implements ShiftService {
                 .map(comment -> new CommentResponseDto(comment.getId(), comment.getContent(), comment.getCreatedAt()))
                 .collect(Collectors.toList());
 
+        Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("board_status", String.valueOf(board.getBoardStatus()));
+
+        if(codeLabel.isEmpty()) {
+            throw new RuntimeException("codeLabel is empty");
+        }
+
         return new ShiftDetailsResponseDto(
                 board.getId(),
                 board.getContent(),
-                board.getBoardStatus(),
+                codeLabel.get(),
                 commentDtos
         );
     }
@@ -195,32 +210,30 @@ public class ShiftServiceImpl implements ShiftService {
     @Override
     public ShiftResponseDto updateShift(ShiftUpdateDto shiftUpdateDto) {
 
-        // 1. 로그인 사용자 조회
-        Member member = authService.getLoginMember();
-
-
         Long boardId = shiftUpdateDto.getBoardId();
         Board board = shiftRepository.findById(boardId).orElseThrow(
                 () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
         );
 
-        board.update(shiftUpdateDto, member.getAccountId());
-        return new ShiftResponseDto(board);
+        board.update(shiftUpdateDto.getContent());
+
+        Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("board_status", String.valueOf(board.getBoardStatus()));
+
+        if(codeLabel.isEmpty()) {
+            throw new RuntimeException("codeLabel is empty");
+        }
+
+        return new ShiftResponseDto(board,codeLabel.get());
     }
 
     // 교대 요청 글 D
     @Override
     public void deleteShift(Long boardId) {
 
-        // 게시판, 회원, 부서가 존재하는지 확인
 
-        // 1. 로그인 사용자 조회
-        Member member = authService.getLoginMember();
-        Department department = member.getDepartment();
-
-        Board board = shiftRepository.findById(boardId).orElseThrow(
-                () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
-        );
+        if(!shiftRepository.existsById(boardId)) {
+            throw new RuntimeException("board is empty");
+        }
 
 
         shiftRepository.deleteById(boardId);

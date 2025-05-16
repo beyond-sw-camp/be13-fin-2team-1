@@ -190,7 +190,7 @@ public class ScheduleService {
 
         if(scheduleTemp.isPresent()) {
 
-            if(scheduleTemp.get().getCategory() != TempCategory.WAITING_OFF) {
+            if(scheduleTemp.get().getCategory() == TempCategory.ACCEPTED_OFF) {
                 throw new RuntimeException("이미 처리되었습니다.");
             }
 
@@ -236,8 +236,18 @@ public class ScheduleService {
             throw new RuntimeException("scheduleTemp is empty");
         } else {
 
+            System.out.println("scheduleTemp.get().getCategory() = " + scheduleTemp.get().getCategory());
+
             if(scheduleTemp.get().getCategory() != TempCategory.WAITING_OFF) {
-                throw new RuntimeException("이미 처리되었습니다.");
+
+                if(scheduleTemp.get().getCategory() == TempCategory.ACCEPTED_OFF) {
+                    Optional<Schedule> schedule = scheduleRepository.findByNurseAndStartTimeAndCategory(scheduleTemp.get().getNurse(), scheduleTemp.get().getStartTime(), Category.ACCEPTED_OFF);
+                    if(schedule.isPresent()) {
+                        scheduleRepository.deleteById(schedule.get().getId());
+                    }
+                } else {
+                    throw new RuntimeException("이미 처리되었습니다.");
+                }
             }
 
             scheduleTemp.get().rejectedOff();
