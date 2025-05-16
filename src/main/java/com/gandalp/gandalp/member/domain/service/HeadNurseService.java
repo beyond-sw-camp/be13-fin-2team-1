@@ -112,7 +112,7 @@ public class HeadNurseService {
     }
 
 
-    // 모든 간호사 조회 (수간호사 모두 가능) -> 페이징 처리
+    // 해당 과의 모든 간호사 조회 (수간호사 모두 가능) -> 페이징 처리
     public Page<NurseResponseDto> getAll(String keyword, NurseSearchOption searchOption, Pageable pageable){
 
         Member loginMember = authService.getLoginMember();
