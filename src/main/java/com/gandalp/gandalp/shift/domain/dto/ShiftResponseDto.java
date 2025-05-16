@@ -7,7 +7,9 @@ import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.shift.domain.entity.Board;
 import com.gandalp.gandalp.shift.domain.entity.BoardStatus;
 import com.gandalp.gandalp.shift.domain.entity.Comment;
+import io.micrometer.common.lang.Nullable;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -19,55 +21,24 @@ import java.util.stream.Collectors;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ShiftResponseDto {
 
     private Long boardId;
     private Long memberId;
     private Long departmentId;
-    private String boardStatus;      // code_value
     private String boardStatusLabel; // code_label
     private String content;
-    private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
     private List<CommentResponseDto> comments; // 엔티티 대신 DTO
 
-
-    public ShiftResponseDto(Board board) {
+    public ShiftResponseDto(Board board, String codeLable) {
         this.boardId = board.getId();
-        this.memberId = board.getMember().getId();
-        this.departmentId = board.getDepartment().getId();
         this.content = board.getContent();
-        this.boardStatus = board.getBoardStatus();
-        this.createdAt = board.getCreatedAt();
-        this.createdBy = board.getCreatedBy();
+        this.memberId = board.getMember() != null ? board.getMember().getId() : null;
+        this.departmentId = board.getDepartment() != null ? board.getDepartment().getId() : null;
+        this.boardStatusLabel = codeLable;
         this.updatedAt = board.getUpdatedAt();
-        this.updatedBy = board.getUpdatedBy();
-        // 엔티티 -> DTO 변환 예시
-        this.comments = board.getComments() != null
-                ? board.getComments().stream().map(CommentResponseDto::new).collect(Collectors.toList())
-                : new ArrayList<>();
-
+        this.comments = board.getComments().stream().map(CommentResponseDto::new).collect(Collectors.toList());
     }
-
-
-    public ShiftResponseDto(Long boardId, String content, String boardStatus, String boardStatusLabel, LocalDateTime createdAt) {
-        this.boardId = boardId;
-        this.content = content;
-        this.boardStatus = boardStatus;
-        this.boardStatusLabel = boardStatusLabel;
-        this.createdAt = createdAt;
-    }
-
-
-    // QueryDSL 등에서 쓰는 생성자
-    public ShiftResponseDto(Long boardId, String content, String boardStatus, LocalDateTime createdAt) {
-        this.boardId = boardId;
-        this.content = content;
-        this.boardStatus = boardStatus;
-        this.createdAt = createdAt;
-    }
-
-
 }

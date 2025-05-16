@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.shift.domain.entity;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.shift.domain.dto.CommentUpdateDto;
 import jakarta.persistence.Column;
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Comment {
+public class Comment extends BaseEntity {
 
 
 	@Id
@@ -41,18 +42,6 @@ public class Comment {
 	@Column(nullable = false, length = 200)
 	private String content;
 
-	@Column(nullable = false)
-	private LocalDateTime createdAt;
-
-	@Column(length = 30)
-	private String createdBy;
-
-	@Column(nullable = false)
-	private LocalDateTime updatedAt;
-
-	@Column(nullable = false, length = 30)
-	private String updatedBy;
-
 	@Builder
 	public Comment(CommentUpdateDto commentUpdateDto, Member member, Board board) {
 		this.content = commentUpdateDto.getContent();
@@ -63,8 +52,6 @@ public class Comment {
 
 	public void update(CommentUpdateDto commentUpdateDto) {
 		this.content = commentUpdateDto.getContent();
-		this.updatedAt = LocalDateTime.now();
-		this.updatedBy = member.getAccountId();
 	}
 
 

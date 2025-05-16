@@ -1,18 +1,10 @@
 package com.gandalp.gandalp.shift.domain.entity;
 
+import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.shift.domain.dto.ShiftUpdateDto;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -27,7 +19,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Board {
+public class Board extends BaseEntity{
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,22 +37,9 @@ public class Board {
 	@Column(nullable = false, length = 200)
 	private String content;
 
-	@Builder.Default
-	@Column(nullable = false, name = "board_status")
-	private String boardStatus = "Waiting";
-
-
 	@Column(nullable = false)
-	private LocalDateTime createdAt;
-
-	@Column(length = 30)
-	private String createdBy;
-
-	@Column
-	private LocalDateTime updatedAt;
-
-	@Column(length = 30)
-	private String updatedBy;
+	@Enumerated(EnumType.STRING)
+	private BoardStatus boardStatus;
 
 	@OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<Comment> comments = new ArrayList<>();
@@ -75,11 +54,8 @@ public class Board {
 	}
 
 
-	public void update(ShiftUpdateDto shiftUpdateDto, String updatedByAccountId) {
-		this.content = shiftUpdateDto.getContent();
-		this.updatedAt = LocalDateTime.now();
-		this.updatedBy = updatedByAccountId;
-
+	public void update(String content) {
+		this.content = content;
 	}
 
 }
