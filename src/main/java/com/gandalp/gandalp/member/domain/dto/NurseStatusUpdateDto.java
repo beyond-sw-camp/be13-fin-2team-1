@@ -15,8 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class NurseStatusUpdateDto {
 
-	@NotBlank
-	private String email;
+	private Long nurseId;
 
 	@NotBlank
 	private String password;

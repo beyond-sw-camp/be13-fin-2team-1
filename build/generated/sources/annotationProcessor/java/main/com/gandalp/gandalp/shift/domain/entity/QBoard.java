@@ -22,15 +22,19 @@ public class QBoard extends EntityPathBase<Board> {
 
     public static final QBoard board = new QBoard("board");
 
-    public final StringPath boardStatus = createString("boardStatus");
+    public final com.gandalp.gandalp.common.entity.QBaseEntity _super = new com.gandalp.gandalp.common.entity.QBaseEntity(this);
+
+    public final EnumPath<BoardStatus> boardStatus = createEnum("boardStatus", BoardStatus.class);
 
     public final ListPath<Comment, QComment> comments = this.<Comment, QComment>createList("comments", Comment.class, QComment.class, PathInits.DIRECT2);
 
     public final StringPath content = createString("content");
 
-    public final DateTimePath<java.time.LocalDateTime> createdAt = createDateTime("createdAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> createdAt = _super.createdAt;
 
-    public final StringPath createdBy = createString("createdBy");
+    //inherited
+    public final StringPath createdBy = _super.createdBy;
 
     public final com.gandalp.gandalp.hospital.domain.entity.QDepartment department;
 
@@ -38,9 +42,11 @@ public class QBoard extends EntityPathBase<Board> {
 
     public final com.gandalp.gandalp.member.domain.entity.QMember member;
 
-    public final DateTimePath<java.time.LocalDateTime> updatedAt = createDateTime("updatedAt", java.time.LocalDateTime.class);
+    //inherited
+    public final DateTimePath<java.time.LocalDateTime> updatedAt = _super.updatedAt;
 
-    public final StringPath updatedBy = createString("updatedBy");
+    //inherited
+    public final StringPath updatedBy = _super.updatedBy;
 
     public QBoard(String variable) {
         this(Board.class, forVariable(variable), INITS);

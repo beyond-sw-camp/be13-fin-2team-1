@@ -13,11 +13,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class NurseCurrentStatusDto {
+
+	private Long id;
 	private String name;
 	private Status workingStatus;
 
 
 	public NurseCurrentStatusDto(Nurse nurse){
+		this.id = nurse.getId();
 		this.name = nurse.getName();
 		this.workingStatus = nurse.getWorkingStatus();
 	}

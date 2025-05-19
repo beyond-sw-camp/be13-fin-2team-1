@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +18,7 @@ import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
 import com.gandalp.gandalp.member.domain.dto.NurseCurrentStatusDto;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
+import com.gandalp.gandalp.member.domain.dto.NurseStatusResponseDto;
 import com.gandalp.gandalp.member.domain.dto.NurseStatusUpdateDto;
 import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
@@ -42,6 +44,19 @@ public class NurseService {
 	private final ScheduleRepository scheduleRepository;
 	private final SurgeryScheduleRepository surgeryScheduleRepository;
 	private final AuthService authService;
+	private final PasswordEncoder passwordEncoder;
+
+	// 해당 과의 모든 간호사 조회 (페이징 처리 X)
+	public List<NurseStatusResponseDto> getSimpleNurseList(Department department) {
+
+		List<Nurse> nurseList = nurseRepository.findByDepartment(department);
+
+		return nurseList.stream()
+			.map(nurse -> new NurseStatusResponseDto(nurse.getId(), nurse.getName()))
+			.toList();
+	}
+
+
 
 	///  간호사들의 현재 상태 조회
 	public List<NurseCurrentStatusDto> getNurseStatus(){
@@ -61,7 +76,7 @@ public class NurseService {
 
 
 		return nurses.stream()
-			.map(nurse -> new NurseCurrentStatusDto(nurse.getName(), nurse.getWorkingStatus() ))
+			.map(nurse -> new NurseCurrentStatusDto(nurse.getId(), nurse.getName(), nurse.getWorkingStatus() ))
 			.toList();
 	}
 
@@ -73,25 +88,24 @@ public class NurseService {
 		authService.getLoginMember();
 
 		log.info("login 완료");
+		log.info("request = "+ request.toString());
+		// 2. request 엣서의 long id 와 그 사람의 비밀번호 맞는지 검증
+		Nurse nurse = nurseRepository.findById(request.getNurseId()).orElseThrow(
+			() -> new IllegalArgumentException("해당 간호사가 존재하지 않습니다.")
+		);
 
+		log.info(nurse.getName());
 
-		// 2. 이메일 + 비밀번호로 본인 인증
-		NurseResponseDto nurseDto = scheduleService.checkPassword(request.getPassword(), request.getEmail());
-
-		if (nurseDto == null) {
-			throw new IllegalArgumentException("해당 간호사가 존재하지 않습니다.");
+		if(!passwordEncoder.matches(request.getPassword(), nurse.getPassword())){
+			new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 
-		log.info("nurseDto "+ nurseDto.toString());
-		// 3. 이메일로 해당 nurse가 존재하는지 검증
-		Nurse nurse = nurseRepository.findByEmail(nurseDto.getEmail()).orElseThrow(
-			() -> new EntityNotFoundException("해당 간호사가 존재하지 않습니다.")
-		);
+		log.info(nurse.getPassword());
+		// 3. 근무 상태 수정
+
 		log.info("nurse "+ nurse.toString());
 		Status workingStatus = request.getWorkingStatus();
 
-
-		// 4. 근무 상태 수정
 		nurse.updateWorkingStatus(workingStatus);
 		log.info("수정! ");
 

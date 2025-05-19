@@ -18,11 +18,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gandalp.gandalp.auth.model.service.AuthService;
+import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.dto.NurseCurrentStatusDto;
 import com.gandalp.gandalp.member.domain.dto.NurseRequestDto;
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
+import com.gandalp.gandalp.member.domain.dto.NurseStatusResponseDto;
 import com.gandalp.gandalp.member.domain.dto.NurseStatusUpdateDto;
 import com.gandalp.gandalp.member.domain.dto.NurseUpdateDto;
+import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.entity.NurseSearchOption;
 import com.gandalp.gandalp.member.domain.service.HeadNurseService;
 import com.gandalp.gandalp.member.domain.service.NurseService;
@@ -40,6 +44,7 @@ public class NurseController {
     private final NurseService nurseService;
     private final HeadNurseService headNurseService;
     private final ScheduleService scheduleService;
+    private final AuthService authService;
 
     // 간호사 생성
     @Operation(summary = "간호사 생성", description = "수간호사가 새로운 간호사를 생성합니다.")
@@ -141,6 +146,30 @@ public class NurseController {
 
         return ResponseEntity.ok(status);
     }
+
+    // 페이징 처리 안된 모든 간호사 조회
+    @Operation(summary = "간호사 전체 조회", description = "[페이징 처리 안됨]소속된 부서의 간호사들을 조회합니다.")
+    @GetMapping("/list")
+    public ResponseEntity<?> getNurseList(){
+        List<NurseStatusResponseDto> simpleNurseList = null;
+
+        try {
+            Member loginMember = authService.getLoginMember();
+            Department department = loginMember.getDepartment();
+
+            simpleNurseList = nurseService.getSimpleNurseList(department);
+
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e);
+        }
+
+
+        return ResponseEntity.ok(simpleNurseList);
+    }
+
+
+
+
 
     // 간호사들의 현재 상태 수정
     // 로그인한 간호사 계정의 과를 가져와서 이메일과 비밀번호로 수정 가능

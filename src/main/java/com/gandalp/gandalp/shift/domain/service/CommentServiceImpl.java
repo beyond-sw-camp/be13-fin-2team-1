@@ -43,8 +43,6 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = Comment.builder()
                 .content(commentCreateRequestDto.getContent())
-                .createdAt(LocalDateTime.now())
-                .createdBy(member.getAccountId())
                 .board(board)
                 .member(member)
                 .build();
@@ -79,22 +77,6 @@ public class CommentServiceImpl implements CommentService {
         return new CommentResponseDto(comment);
     }
 
-    // 댓글 R
-//    @Transactional(readOnly = true)
-//    @Override
-//    public List<CommentResponseDto> findByBoardId(Long boardId) {
-//        Board board = shiftRepository.findById(boardId).orElseThrow(
-//                () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
-//        );
-//
-//        // 2. 해당 게시글의 댓글 목록 조회
-//        List<Comment> comments = commentRepository.findByBoardId(boardId);
-//
-//        // 3. Comment 엔티티를 CommentResponseDto로 변환
-//        return comments.stream()
-//                .map(CommentResponseDto::new)
-//                .collect(Collectors.toList());
-//    }
 
     // 댓글 D
     @Override
