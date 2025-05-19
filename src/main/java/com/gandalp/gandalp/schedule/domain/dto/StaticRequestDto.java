@@ -32,5 +32,5 @@ public class StaticRequestDto {
 	private Integer quarter;
 
 	@Schema(description = "근무 상태. ON / OFF / IN SURGERY")
-	private Status status = Status.ON;
+	private Status status;
 }
