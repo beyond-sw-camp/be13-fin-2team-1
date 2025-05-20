@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import java.io.BufferedReader;
@@ -19,7 +20,7 @@ import java.nio.charset.StandardCharsets;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class NaverMapClient {
+public class NaverGeoClient {
     // 네이버 지도 api의 geocoding 서비스를 호출해 주소를 좌표( 위도, 경도 ) 로 변환
 
     /*
@@ -41,9 +42,12 @@ public class NaverMapClient {
     @Value("${naver.map.client-secret}")
     private String clientSecret;
 
-    // 주소를 좌표로 변환하는 메서드
+    // 주소를 좌표로 변환하는 메서드 ( 캐시에 저장해서 주소별 한번만 네이버 api 호출
+    @Cacheable(cacheNames = "geoPoints", key = "#address")
     public GeoResponse getGeoPointFromAddress(String address) {
 
+        
+        // 모든 병원의 주소를 하나씩 가져와서 좌표로 변환
         HttpURLConnection conn = null;
 
         try {
@@ -52,10 +56,14 @@ public class NaverMapClient {
             String encodedAddress = URLEncoder.encode(address, StandardCharsets.UTF_8)
                     .replace("+", "%20");
 
+
             // 요청 url 생성
-            String apiUrl = "https://naveropenapi.apigw.ntruss.com/map-geocode/v2/geocode?query="
+            String apiUrl = "https://maps.apigw.ntruss.com/map-geocode/v2/geocode" +"?query="
                     + encodedAddress;
 
+
+
+            log.debug("encodedAddress={}", encodedAddress);
             log.debug("▶ Naver Geocode 요청 URL: {}", apiUrl);
             log.debug("▶ X-NCP-APIGW-API-KEY-ID: {}", clientId);
             log.debug("▶ X-NCP-APIGW-API-KEY: {}", clientSecret);
@@ -110,7 +118,7 @@ public class NaverMapClient {
             throw e;
         }
         catch (Exception e) {
-            log.error("NaverMapClient 처리 중 예외 발생", e);
+            log.error("NaverGeoClient 처리 중 예외 발생", e);
             throw new RuntimeException("지도 정보 조회 실패", e);
         }finally{
             if (conn != null) {
