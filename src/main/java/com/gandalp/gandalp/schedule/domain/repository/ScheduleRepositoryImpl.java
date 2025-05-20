@@ -49,42 +49,35 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 
 
 	@Override
-	public StaticsResponseDto getNursesWorkingStatistics(Nurse nurse,Status status, SelectOption selectOption, int year, int month, Integer quarter) {
-
-		StaticsResponseDto statistics = null;
+	public StaticsResponseDto getNursesWorkingStatistics(Nurse nurse, SelectOption selectOption, int year, int month, Integer quarter) {
 
 
-		if (selectOption == null || selectOption == SelectOption.MONTH  ){
+		StaticsResponseDto.StaticsResponseDtoBuilder builder = StaticsResponseDto.builder()
+				.nurseId(nurse.getId())
+				.nurseName(nurse.getName());
+
+		if (selectOption == null || selectOption == SelectOption.MONTH  ) {
 			// 전 달
 
-			NurseStatistics s = nurseStatisticsRepository.findByNurseIdAndYearAndMonth(nurse.getId(), year, month).orElseThrow(
-					() -> new IllegalArgumentException(String.format("%d년 %d월에 대한 통계가 존재하지 않습니다.", year, month))
-				);
+			nurseStatisticsRepository.findByNurseIdAndYearAndMonth(nurse.getId(), year, month).ifPresent(stats -> nurseStats(builder, stats));
 
-			return StaticsResponseDto.builder()
-				.nurseId(nurse.getId())
-				.nurseName(nurse.getName())
-				.dayCount(s.getDayCount())
-				.eveningCount(s.getEveningCount())
-				.nightCount(s.getNightCount())
-				.offCount(s.getOffCount())
-				.surgeryCount(s.getSurgeryCount())
-				.build();
+			return builder.build();
 
+		}
 
-
-		}else if ( selectOption == SelectOption.YEAR ){
+		if ( selectOption == SelectOption.YEAR ){
 
 			List<NurseStatistics> nurseStatistics = nurseStatisticsRepository.findByNurseIdAndYear(nurse.getId(), year);
 			if (nurseStatistics.isEmpty()){
-				throw new IllegalArgumentException(
-					String.format("%d 년 전체에 대한 통계가 존재하지 않습니다. ", year)
-				);
+
+				return builder.build();
 			}
 
-			statistics = sum(nurse, nurseStatistics);
+			return sum(nurse, nurseStatistics);
 
-		}else if(selectOption == SelectOption.QUARTER) {
+		}
+
+		if(selectOption == SelectOption.QUARTER) {
 
 
 			if (quarter == null || quarter < 1 || quarter > 4) {
@@ -96,17 +89,27 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 
 			List<NurseStatistics> nurseStatistics = nurseStatisticsRepository.findByNurseAndYearAndMonthBetween(nurse, year, startMonth, endMonth);
 			if(nurseStatistics.isEmpty()){
-				throw new IllegalArgumentException(
-					String.format("%d년 %d분기에 대한 통계가 존재하지 않습니다. ", year, quarter)
-				);
+
+				return builder.build();
 			}
 
-			statistics = sum(nurse, nurseStatistics);
+			return sum(nurse, nurseStatistics);
 		}
 
 
-		return statistics;
+		return builder.build();
     }
+
+	private void nurseStats(
+			StaticsResponseDto.StaticsResponseDtoBuilder b,
+			NurseStatistics s) {
+
+		b.dayCount(s.getDayCount())
+				.eveningCount(s.getEveningCount())
+				.nightCount(s.getNightCount())
+				.offCount(s.getOffCount())
+				.surgeryCount(s.getSurgeryCount());
+	}
 
 
 	private StaticsResponseDto sum(Nurse nurse, List<NurseStatistics> nurseStatistics){

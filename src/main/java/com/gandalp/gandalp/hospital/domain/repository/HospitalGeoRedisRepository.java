@@ -6,10 +6,10 @@ import java.util.List;
 
 public interface HospitalGeoRedisRepository {
 
-    void saveHospitalLocation(Long hospitalId, double lon, double lat);
+    void saveHospitalLocation(Long hospitalId, double longitude, double latitude);
 
     // redis에서 주변 응급실 20곳 조회
-    List<Long>findNearbyHospitalIds(double lat, double lon, int count);
+    List<Long>findNearbyHospitalIds(double latitude, double longitude, int count);
 
 
     List<Point>findLocationsByIds(List<Long> candidateIds);

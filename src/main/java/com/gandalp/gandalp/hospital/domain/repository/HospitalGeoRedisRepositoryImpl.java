@@ -1,18 +1,21 @@
 package com.gandalp.gandalp.hospital.domain.repository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
+
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Circle;
 import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.GeoResult;
+import org.springframework.data.geo.Metrics;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
+import org.springframework.data.redis.connection.RedisGeoCommands.GeoRadiusCommandArgs;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.domain.geo.GeoLocation;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -28,41 +31,55 @@ public class HospitalGeoRedisRepositoryImpl implements HospitalGeoRedisRepositor
 
     // 좌표로 바꾼 주소를 redis에 저장
     @Override
-    public void saveHospitalLocation(Long hospitalId, double lon, double lat) {
-        redisTemplate.opsForGeo().add(GEO_KEY, new Point(lon, lat), hospitalId.toString());
+    public void saveHospitalLocation(Long hospitalId, double longitude, double latitude) {
+        redisTemplate.opsForGeo().add(GEO_KEY, new Point(longitude, latitude), hospitalId.toString());
     }
 
     // redis에서 가까운 병원 id 후보 50개 조회
     @Override
-    public List<Long> findNearbyHospitalIds(double lat, double lon, int count){
-        log.info("▶ findNearbyHospitalIds 호출: 위도={}, 경도={}, limit={}", lat, lon, count);
-        Circle radius = new Circle(
-                new Point(lon, lat),
-                new Distance(20_000, RedisGeoCommands.DistanceUnit.KILOMETERS) // 반경 10km 내에서 검색
-                // redis가 반경없이 조회하는 api를 제공하지 않음
-        );
+    public List<Long> findNearbyHospitalIds(double latitude, double longitude, int count){
+        log.info("▶ findNearbyHospitalIds 호출: 위도={}, 경도={}, limit={}", latitude, longitude, count);
 
-        GeoRadiusCommandArgs args = GeoRadiusCommandArgs
-                .newGeoRadiusArgs()
-                .limit(count);
+        // 1. 반경을 조금씩 늘려서 조회
+
+        double minRadius = 20; // 20km
+        double maxRadius = 100;
+        double step = 1;
+
+        double radius = minRadius;
+        List<GeoResult<RedisGeoCommands.GeoLocation<String>>> results;
+
+        // 2. results.size()가 50이 될 때까지 조회
+        do{
+            results = redisTemplate.opsForGeo()
+                    .radius(
+                            "hospital:geo",
+                            new Circle(new Point(longitude, latitude), new Distance(radius, Metrics.KILOMETERS)),
+                            GeoRadiusCommandArgs.newGeoRadiusArgs()
+                                    .includeDistance()
+                                    .sortAscending()
+                                    .limit(50)
+                    )
+                    .getContent();
+            if(results.size() >= 50) {
+                break;
+            }
+            // 반경은 최소부터 1km 씩 넓어짐( 최대 반경 전까지 )
+            radius = Math.min(radius + step, maxRadius);
+        }while(radius < maxRadius);
 
 
-        GeoResults<RedisGeoCommands.GeoLocation<String>> results =
-                redisTemplate.opsForGeo().radius(GEO_KEY, radius, args);
+        // 4. id 리스트로 변환
+        List<Long> hospitalIdList = new ArrayList<>();
+        for (GeoResult<RedisGeoCommands.GeoLocation<String>> result : results) {
 
-        if( results == null || results .getContent().isEmpty() ){
-            log.warn("▶ Redis geo 조회 결과가 없습니다. 위도={}, 경도={}, limit={}", lat, lon, count);
-        }else{
-            log.info("▶ Redis geo 조회 결과 개수: {}", results.getContent().size());
-            results.getContent().forEach(r -> {
-                String id = r.getContent().getName();
-                double distance = r.getDistance().getValue();
-                log.info("   - 병원ID={} (거리={} {})", id, distance, r.getDistance().getUnit());
-            });
+            String hs = result.getContent().getName();
+            Long id = Long.valueOf(hs);
+            hospitalIdList.add(id);
         }
-        return results.getContent().stream()
-                .map(r -> Long.valueOf(r.getContent().getName())) // 저장된 병원 ID 추출
-                .collect(Collectors.toList());
+
+        return hospitalIdList;
+
     }
 
 

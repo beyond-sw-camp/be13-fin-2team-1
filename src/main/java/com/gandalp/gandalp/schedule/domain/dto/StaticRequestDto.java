@@ -31,6 +31,6 @@ public class StaticRequestDto {
 	@Schema(description = "선택한 분기 (1~4). selectOption이 QUARTER일 때만 사용")
 	private Integer quarter;
 
-	@Schema(description = "근무 상태. ON / OFF / IN SURGERY")
-	private Status status;
+//	@Schema(description = "근무 상태. ON / OFF / IN SURGERY")
+//	private Status status;
 }

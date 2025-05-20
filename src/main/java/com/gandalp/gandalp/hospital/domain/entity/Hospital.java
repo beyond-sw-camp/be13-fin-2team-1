@@ -29,6 +29,12 @@ public class Hospital extends BaseEntity {
 	@Column(nullable = false, length = 100)
 	private String address;
 
+	@Column(nullable = true)
+	private Double latitude;
+
+	@Column(nullable = true)
+	private Double longitude;
+
 	@Column(nullable = false)
 	private int totalErCount;
 
@@ -43,5 +49,10 @@ public class Hospital extends BaseEntity {
 			throw new IllegalArgumentException("응급실 병상 수가 0개 미만일 수 없습니다. ");
 
 		this.availableErCount = count;
+	}
+
+	public void updateGeoCode(Double latitude, Double longitude) {
+		this.latitude = latitude;
+		this.longitude = longitude;
 	}
 }

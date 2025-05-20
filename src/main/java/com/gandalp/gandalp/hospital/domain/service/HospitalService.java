@@ -31,7 +31,7 @@ public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final HospitalGeoRedisRepository hospitalGeoRedisRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final NaverMapClient naverMapClient;
+    private final NaverGeoClient naverGeoClient;
     private final NaverDirectionClient naverDirectionClient;
 
 
@@ -51,10 +51,11 @@ public class HospitalService {
 
 
     // 병원 좌표 갱신 ( 최초 1회 또는 주소 수정 시 )
+    // 병원 추가나 주소 수정 api가 있는 경우
     public void updateGeoPointFroAllHospitals() {
         List<Hospital> hospitals = hospitalRepository.findAll();
         for (Hospital hospital : hospitals) {
-            GeoResponse geo = naverMapClient.getGeoPointFromAddress((hospital.getAddress()));
+            GeoResponse geo = naverGeoClient.getGeoPointFromAddress((hospital.getAddress()));
 
             hospitalGeoRedisRepository.saveHospitalLocation(
                     hospital.getId(),
@@ -67,11 +68,11 @@ public class HospitalService {
     // 검색이 없으면 기본 현재 위치에서 가까운 순으로 응급실 20곳 조회
     // 거리순, 가용 병상 순
     // 검색을 하는 경우 주소, 병원 이름
-    public Page<HospitalDto> getNearestHospitals(double lat, double lon, String keyword, SortOption sortOption, Pageable pageable) {
+    public Page<HospitalDto> getNearestHospitals(double longitude, double latitude, String keyword, SortOption sortOption, Pageable pageable) {
 
 
         // 1) Redis Geo에서 반경 제한 없이 최단거리 후보 ID(최대 50개 정도 여유 있게) 조회
-        List<Long> candidateIds = hospitalGeoRedisRepository.findNearbyHospitalIds(lat, lon, 50);
+        List<Long> candidateIds = hospitalGeoRedisRepository.findNearbyHospitalIds(latitude, longitude, 50);
 
         // 만약 후보가 없다면 빈 페이지 반환
         if (candidateIds.isEmpty()) {
@@ -85,7 +86,6 @@ public class HospitalService {
 
 
         // 3) Point 리스트를 네이버 Direction API용 DTO로 변환
-        //    (DestinationDto는 id, lat, lon 같이 담고 있어야 합니다)
         List<DestinationDto> destinations = IntStream.range(0, candidateIds.size())
                 .mapToObj(i -> new DestinationDto(
                         candidateIds.get(i),
@@ -97,7 +97,7 @@ public class HospitalService {
 
         // 4) 네이버 Direction API 호출 (service=15, batch size 최대 25)
         Map<Long, Double> roadDistances = naverDirectionClient.getRoadDistances(
-                lat, lon,
+                latitude, longitude,
                 destinations
         );
 
@@ -109,7 +109,11 @@ public class HospitalService {
                 .collect(Collectors.toList());
 
         // 6) 최종적으로 거리/검색/정렬 조건을 적용해 JPA로 조회
-        return hospitalRepository.searchNearbyHospitals(top20Ids, keyword, sortOption, pageable);
+
+        Page<HospitalDto> page = hospitalRepository.searchNearbyHospitals(top20Ids, keyword, sortOption, pageable);
+
+
+        return page;
     }
 
 

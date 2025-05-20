@@ -13,7 +13,7 @@ public interface ScheduleRepositoryCustom {
 
 	boolean findCurrentSchedule(Long nurseId, LocalDateTime now );
 
-	StaticsResponseDto getNursesWorkingStatistics(Nurse nurse,Status status, SelectOption selectOption,  int year, int month, Integer quarter );
+	StaticsResponseDto getNursesWorkingStatistics(Nurse nurse, SelectOption selectOption,  int year, int month, Integer quarter );
 
 
 

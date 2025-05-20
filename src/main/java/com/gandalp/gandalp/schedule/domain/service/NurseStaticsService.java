@@ -49,9 +49,6 @@ public class NurseStaticsService {
 		}
 
 
-		Status status = staticRequestDto.getStatus() ;
-
-
 		/// 4. 전달받은 값 처리
 		SelectOption selectOption = staticRequestDto.getSelectOption();
 
@@ -85,25 +82,14 @@ public class NurseStaticsService {
 			throw new IllegalArgumentException("1월 ~ 12월에서 골라주세요. ");
 
 
-
 		List<StaticsResponseDto> allWorkingStatics = new ArrayList<>();
 
 		// 모든 간호사에 대해 통합 통계를 조회함 (day/evening/night/off/surgery 포함)
 		for (Nurse nurse : nurseList) {
-			StaticsResponseDto nurseStatics = scheduleRepository.getNursesWorkingStatistics(nurse, status, selectOption, targetYear, targetMonth, targetQuarter);
+			StaticsResponseDto nurseStatics = scheduleRepository.getNursesWorkingStatistics(nurse, selectOption, targetYear, targetMonth, targetQuarter);
+
 			allWorkingStatics.add(nurseStatics);
 		}
-
-		if (allWorkingStatics.isEmpty()){
-			throw new IllegalArgumentException("근무 데이터를 조회할 수 없습니다.");
-		}
-
-
-
-
-		///  여기서 status에 따라 데이터를 던져줘야 하나>??
-
-
 
 		return allWorkingStatics;
 

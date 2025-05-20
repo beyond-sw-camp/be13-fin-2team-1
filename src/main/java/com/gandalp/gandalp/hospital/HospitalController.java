@@ -42,7 +42,7 @@ public class HospitalController {
             @RequestParam(required = false) String keyword,
             @PageableDefault(size = 10, page = 0) Pageable pageable ) {
 
-        geoCodingService.convertAllHospitalAddressToGeo();
+//        geoCodingService.convertAllHospitalAddressToGeo();
 
         Page<HospitalDto> hospitalList = null;
 
