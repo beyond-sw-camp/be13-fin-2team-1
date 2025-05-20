@@ -4,6 +4,7 @@ package com.gandalp.gandalp.schedule.domain.entity;
 import com.gandalp.gandalp.common.entity.BaseEntity;
 import com.gandalp.gandalp.hospital.domain.entity.Room;
 import com.gandalp.gandalp.member.domain.entity.Nurse;
+import com.gandalp.gandalp.schedule.domain.dto.WorkTempRequestUpdateDto;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -68,5 +69,11 @@ public class ScheduleTemp extends BaseEntity {
 
     public void rejectedOff(){
         this.category = TempCategory.REJECTED_OFF;
+    }
+
+    public void update(WorkTempRequestUpdateDto workTempRequestUpdateDto){
+        this.content = workTempRequestUpdateDto.getContent();
+        this.startTime = workTempRequestUpdateDto.getStartTime();
+        this.endTime = workTempRequestUpdateDto.getEndTime();;
     }
 }

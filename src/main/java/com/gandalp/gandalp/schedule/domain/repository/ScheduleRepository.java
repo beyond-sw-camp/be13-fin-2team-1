@@ -7,6 +7,8 @@ import java.util.Optional;
 import com.gandalp.gandalp.schedule.domain.entity.Category;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
 import com.gandalp.gandalp.schedule.domain.entity.TempCategory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -36,6 +38,11 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, Sched
     List<Schedule> findAllByNurse(Nurse nurse);
 
     Optional<Schedule> findByNurseAndStartTimeAndCategory (Nurse nurse, LocalDateTime startTime, Category category);
+
+    @Query("select s from Schedule s " +
+            "where s.nurse IN :nurseList " +
+            "and s.category = :category ")
+    List<Schedule> findInNurseAndCategory(@Param("nurseList") List<Nurse> nurseList, @Param("category") Category category);
 
     @Query("SELECT s FROM Schedule s " +
             "WHERE s.nurse.id = :nurseId")

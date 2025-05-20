@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @AllArgsConstructor
 @Builder
-public class OffScheduleResponseDto {
+public class ScheduleResponseDto {
 
     private Long offScheduleId;
 
