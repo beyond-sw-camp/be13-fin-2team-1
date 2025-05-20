@@ -2,7 +2,10 @@ package com.gandalp.gandalp.schedule.domain.repository;
 
 import com.gandalp.gandalp.member.domain.entity.Nurse;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
+import com.gandalp.gandalp.schedule.domain.entity.TempCategory;
 import io.lettuce.core.dynamic.annotation.Param;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -12,7 +15,7 @@ import java.util.Optional;
 
 public interface ScheduleTempRepository extends JpaRepository<ScheduleTemp, Long> {
 
-    List<ScheduleTemp> findAllByNurseEmail(String email);
+    Page<ScheduleTemp> findAllByNurseEmail(String email, Pageable pageable);
 
     Optional<ScheduleTemp> findById(Long schduleTempId);
 
@@ -23,7 +26,16 @@ public interface ScheduleTempRepository extends JpaRepository<ScheduleTemp, Long
     List<ScheduleTemp> findOverlappingTempSchedules(@Param("nurseId") Long nurseId,
                                                     @Param("startTime") LocalDateTime startTime,
                                                     @Param("endTime") LocalDateTime endTime);
-    List<ScheduleTemp> findByNurseIn(List<Nurse> nurseList);
 
-    List<ScheduleTemp> findAllByNurse(Nurse nurse);
+    Page<ScheduleTemp> findAllByNurse(Nurse nurse, Pageable pageable);
+
+    @Query("select s from ScheduleTemp s " +
+            "where s.nurse IN :nurseList " +
+            "AND s.category <> :category")
+    Page<ScheduleTemp> findAllOffByCategory(@Param("nurseList") List<Nurse> nurseList, @Param("category") TempCategory category, Pageable pageable);
+
+    @Query("select s from ScheduleTemp s " +
+            "where s.nurse IN :nurseList " +
+            "AND s.category = :category")
+    List<ScheduleTemp> findAllWorkByCategory(@Param("nurseList") List<Nurse> nurseList, @Param("category") TempCategory category);
 }

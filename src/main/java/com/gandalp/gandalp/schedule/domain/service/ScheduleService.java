@@ -9,10 +9,7 @@ import com.gandalp.gandalp.member.domain.entity.Nurse;
 import com.gandalp.gandalp.member.domain.entity.NurseStatistics;
 import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import com.gandalp.gandalp.member.domain.repository.NurseStatisticsRepository;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleRequestDto;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleResponseDto;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
-import com.gandalp.gandalp.schedule.domain.dto.StaticsUpdateDto;
+import com.gandalp.gandalp.schedule.domain.dto.*;
 import com.gandalp.gandalp.schedule.domain.entity.Category;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.entity.ScheduleTemp;
@@ -23,8 +20,9 @@ import com.gandalp.gandalp.schedule.domain.repository.ScheduleTempRepository;
 import com.gandalp.gandalp.schedule.domain.repository.SurgeryScheduleRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
-import org.springframework.http.ResponseEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -33,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -62,13 +59,19 @@ public class ScheduleService {
         LocalDateTime start = scheduleRequestDto.getStartTime().truncatedTo(ChronoUnit.HOURS);
         LocalDateTime end = scheduleRequestDto.getEndTime().truncatedTo(ChronoUnit.HOURS);
 
-        // 시간 겹치는 기존 스케줄 존재 여부 확인
-        boolean hasConflict = !scheduleTempRepository
-                .findOverlappingTempSchedules(nurse.getId(), start, end)
-                .isEmpty()
-                || !scheduleRepository
-                .findOverlappingSchedules(nurse.getId(), start, end)
-                .isEmpty();
+        LocalDateTime now = LocalDateTime.now();
+
+        // 과거 일정이면 hasConflict = false
+        boolean isPast = end.isBefore(now) && start.isBefore(now);
+
+        if (isPast){
+            throw new IllegalArgumentException("과거 일정은 등록할 수 없습니다.");
+        }
+
+        // 현재 또는 미래 일정이면 겹치는 스케줄 검사
+        boolean hasConflict =
+                !scheduleTempRepository.findOverlappingTempSchedules(nurse.getId(), start, end).isEmpty()
+                        || !scheduleRepository.findOverlappingSchedules(nurse.getId(), start, end).isEmpty();
 
         if (hasConflict) {
             throw new IllegalStateException("해당 시간대에 이미 스케줄이 존재합니다.");
@@ -111,7 +114,7 @@ public class ScheduleService {
         return nurseResponseDto;
     }
 
-    public OffScheduleResponseDto deleteOffScheduleTemp(Long scheduleTempId) {
+    public ScheduleResponseDto deleteOffScheduleTemp(Long scheduleTempId) {
         try {
 
             Optional<ScheduleTemp> scheduleTemp = scheduleTempRepository.findById(scheduleTempId);
@@ -120,7 +123,7 @@ public class ScheduleService {
             Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("schedule_temp_category",String.valueOf(scheduleTemp.get().getCategory()));
             if(codeLabel.isEmpty()) throw new RuntimeException("Code Label is Empty");
 
-            OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
+            ScheduleResponseDto offScheduleResponseDto = ScheduleResponseDto.builder()
                     .offScheduleId(scheduleTempId)
                     .codeLabel(codeLabel.get())
                     .nurseId(scheduleTemp.get().getNurse().getId())
@@ -154,9 +157,9 @@ public class ScheduleService {
         }
     }
 
-    public List<OffScheduleTempResponseDto> getOffScheduleTemp(String email) {
+    public Page<OffScheduleTempResponseDto> getOffScheduleTemp(String email, Pageable pageable) {
         try {
-            List<ScheduleTemp> scheduleTemps = scheduleTempRepository.findAllByNurseEmail(email);
+            Page<ScheduleTemp> scheduleTemps = scheduleTempRepository.findAllByNurseEmail(email, pageable);
 
             // 변환
             List<OffScheduleTempResponseDto> responseDtos = scheduleTemps.stream()
@@ -176,7 +179,7 @@ public class ScheduleService {
                     })
                     .collect(Collectors.toList());
 
-            return responseDtos;
+            return new PageImpl<>(responseDtos, pageable, scheduleTemps.getTotalElements());
 
         } catch (Exception e) {
             throw new RuntimeException("승인 대기 중 오프 조회 실패");
@@ -184,7 +187,7 @@ public class ScheduleService {
     }
 
 
-    public OffScheduleResponseDto acceptOff(Long scheduleTempId) {
+    public ScheduleResponseDto acceptOff(Long scheduleTempId) {
 
         Optional<ScheduleTemp> scheduleTemp = scheduleTempRepository.findById(scheduleTempId);
 
@@ -214,7 +217,7 @@ public class ScheduleService {
                 throw new RuntimeException("Code Label is Empty");
             }
 
-            OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
+            ScheduleResponseDto offScheduleResponseDto = ScheduleResponseDto.builder()
                     .offScheduleId(schedule.getId())
                     .nurseId(schedule.getNurse().getId())
                     .codeLabel(codeLabel.get())
@@ -230,7 +233,7 @@ public class ScheduleService {
         }
     }
 
-    public OffScheduleResponseDto rejectOff(Long scheduleTempId) {
+    public ScheduleResponseDto rejectOff(Long scheduleTempId) {
         Optional<ScheduleTemp> scheduleTemp = scheduleTempRepository.findById(scheduleTempId);
         if(scheduleTemp.isEmpty()) {
             throw new RuntimeException("scheduleTemp is empty");
@@ -255,7 +258,7 @@ public class ScheduleService {
             Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("schedule_temp_category",String.valueOf(scheduleTemp.get().getCategory()));
             if(codeLabel.isEmpty()) throw new RuntimeException("Code Label is Empty");
 
-            OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
+            ScheduleResponseDto offScheduleResponseDto = ScheduleResponseDto.builder()
                     .offScheduleId(scheduleTemp.get().getId())
                     .nurseId(scheduleTemp.get().getNurse().getId())
                     .codeLabel(codeLabel.get())
@@ -271,7 +274,7 @@ public class ScheduleService {
 
     // 승인된 off CRUD
 
-    public List<OffScheduleResponseDto> getOffSchedules(String email) {
+    public List<ScheduleResponseDto> getOffSchedules(String email) {
 
         Optional<Nurse> nurse = nurseRepository.findByEmail(email);
         if (nurse.isEmpty()) {
@@ -280,12 +283,12 @@ public class ScheduleService {
             List<Schedule> schedules = scheduleRepository.findAllByNurse(nurse.get());
 
 
-            List<OffScheduleResponseDto> offScheduleResponseDtos = schedules.stream()
+            List<ScheduleResponseDto> offScheduleResponseDtos = schedules.stream()
                     .map(schedule -> {
                         Optional<String> codeLabelOptional = commonCodeRepository
                                 .findCodeLabelByCodeGroupAndCodeValue("schedule_category", String.valueOf(schedule.getCategory()));
 
-                        return OffScheduleResponseDto.builder()
+                        return ScheduleResponseDto.builder()
                                 .offScheduleId(schedule.getId())
                                 .nurseId(schedule.getNurse().getId())
                                 .content(schedule.getContent())
@@ -307,11 +310,11 @@ public class ScheduleService {
     public void autoUpdateNurseStatics(){
 
         // 1. 모든 간호사들 조회
-
         List<Nurse> allNurse = nurseRepository.findAll();
 
         // 업데이트할 날짜 계산
         LocalDate now = LocalDate.now();
+
         // 지난 달 가져오기
         // ex) 1월이면 작년 12월 가져옴
         int year = now.getMonthValue() == 1 ? now.getYear() -1 : now.getYear();
@@ -392,13 +395,13 @@ public class ScheduleService {
         return Work.NIGHT;
     }
 
-    public OffScheduleResponseDto deleteOff(Long scheduleId) {
+    public ScheduleResponseDto deleteOff(Long scheduleId) {
         try {
             Optional<Schedule> schedule = scheduleRepository.findById(scheduleId);
             Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("schedule_category",String.valueOf(schedule.get().getCategory()));
             if(codeLabel.isEmpty()) throw new RuntimeException("Code Label is Empty");
 
-            OffScheduleResponseDto offScheduleResponseDto = OffScheduleResponseDto.builder()
+            ScheduleResponseDto offScheduleResponseDto = ScheduleResponseDto.builder()
                     .offScheduleId(scheduleId)
                     .codeLabel(codeLabel.get())
                     .nurseId(schedule.get().getNurse().getId())
@@ -414,13 +417,13 @@ public class ScheduleService {
         }
     }
 
-    public List<OffScheduleTempResponseDto> getAllOffScheduleTemp() {
+    public Page<OffScheduleTempResponseDto> getAllOffScheduleTemp(Pageable pageable) {
 
         Member loginMember = authService.getLoginMember();
         List<Nurse> nurseList = nurseRepository.findByDepartment(loginMember.getDepartment());
 
 
-        List<ScheduleTemp> all = scheduleTempRepository.findByNurseIn(nurseList);
+        Page<ScheduleTemp> all = scheduleTempRepository.findAllOffByCategory(nurseList,TempCategory.WORKING_TEMP, pageable);
 
         List<OffScheduleTempResponseDto> offScheduleResponseDtos = all.stream()
                 .map(temp -> {
@@ -438,17 +441,17 @@ public class ScheduleService {
                             .build();
                 })
                 .toList();
-        return offScheduleResponseDtos;
+        return new PageImpl<>(offScheduleResponseDtos, pageable, all.getTotalElements());
 
 
     }
 
-    public List<OffScheduleTempResponseDto> getOffScheduleTempByName(String name) {
+    public Page<OffScheduleTempResponseDto> getOffScheduleTempByName(String name, Pageable pageable) {
 
         Optional<Nurse> nurse = nurseRepository.findByName(name);
         if(nurse.isEmpty()) throw new RuntimeException("간호사 조회 실패");
 
-        List<ScheduleTemp> scheduleTempList = scheduleTempRepository.findAllByNurse(nurse.get());
+        Page<ScheduleTemp> scheduleTempList = scheduleTempRepository.findAllByNurse(nurse.get(), pageable);
 
         List<OffScheduleTempResponseDto> offScheduleResponseDtos = scheduleTempList.stream()
                 .map(temp -> {
@@ -466,6 +469,131 @@ public class ScheduleService {
                             .build();
                 })
                 .toList();
-        return offScheduleResponseDtos;
+        return new PageImpl<>(offScheduleResponseDtos, pageable, scheduleTempList.getTotalElements());
+    }
+
+    public List<WorkTempResponseDto> getAllOffWorkTemp() {
+        Department department = authService.getLoginMember().getDepartment();
+        List<Nurse> nurseList = nurseRepository.findByDepartment(department);
+
+        List<ScheduleTemp> scheduleTempList = scheduleTempRepository.findAllWorkByCategory(nurseList,TempCategory.WORKING_TEMP);
+
+        List<WorkTempResponseDto> workTempResponseDtoList = scheduleTempList.stream()
+                .map(work -> {
+                            Optional<String> codeLabelOptional = commonCodeRepository
+                                    .findCodeLabelByCodeGroupAndCodeValue("schedule_temp_category", String.valueOf(work.getCategory()));
+                            if(codeLabelOptional.isEmpty()) throw new RuntimeException("Code Label is Empty");
+                            return WorkTempResponseDto.builder()
+                                    .workTempId(work.getId())
+                                    .nurseName(work.getNurse().getName())
+                                    .codeLabel(codeLabelOptional.get())
+                                    .content(work.getContent())
+                                    .startTime(work.getStartTime())
+                                    .endTime(work.getEndTime())
+                                    .build();
+                        })
+                .toList();
+
+        return workTempResponseDtoList;
+    }
+
+    public WorkTempResponseDto updateWorkTemp(WorkTempRequestUpdateDto workTempRequestUpdateDto) {
+
+        try {
+
+            ScheduleTemp scheduleTemp = scheduleTempRepository.findById(workTempRequestUpdateDto.getWorkTempId()).orElseThrow(() -> new RuntimeException("scheduleTemp is empty"));
+
+            scheduleTemp.update(workTempRequestUpdateDto);
+
+            return WorkTempResponseDto.builder()
+                    .workTempId(scheduleTemp.getId())
+                    .nurseName(scheduleTemp.getNurse().getName())
+                    .content(scheduleTemp.getContent())
+                    .startTime(scheduleTemp.getStartTime())
+                    .endTime(scheduleTemp.getEndTime())
+                    .build();
+
+        } catch (Exception e) {
+
+            throw new RuntimeException("scheduleTemp update error");
+
+        }
+
+
+    }
+
+    public void deleteWorkTemp(Long workTempId) {
+        try {
+            scheduleRepository.deleteById(workTempId);
+        } catch (Exception e) {
+            throw new RuntimeException("임시 근무 삭제 실패");
+        }
+    }
+
+    public List<WorkScheduleResponseDto> showWork() {
+
+        Department department = authService.getLoginMember().getDepartment();
+        List<Nurse> nurseList = nurseRepository.findByDepartment(department);
+
+        List<Schedule> schedules = scheduleRepository.findInNurseAndCategory(nurseList, Category.WORKING);
+
+        List<WorkScheduleResponseDto> workScheduleResponseDtos = schedules.stream()
+                .map(work -> {
+                    Optional<String> codeLabel = commonCodeRepository
+                            .findCodeLabelByCodeGroupAndCodeValue("schedule_category", String.valueOf(work.getCategory()));
+                    return WorkScheduleResponseDto.builder()
+                            .workScheduleId(work.getId())
+                            .nurseName(work.getNurse().getName())
+                            .codeLabel(codeLabel.get())
+                            .content(work.getContent())
+                            .startTime(work.getStartTime())
+                            .endTime(work.getEndTime())
+                            .build();
+                })
+                .toList();
+        return workScheduleResponseDtos;
+    }
+
+    public ScheduleResponseDto acceptWork(Long workScheduleId) {
+
+        Optional<ScheduleTemp> workTemp = scheduleTempRepository.findById(workScheduleId);
+
+        if(workTemp.isEmpty()) {
+            throw new RuntimeException("workTemp is empty");
+        }
+
+        Schedule work = Schedule.builder()
+                .nurse(workTemp.get().getNurse())
+                .category(Category.WORKING)
+                .content(workTemp.get().getContent())
+                .startTime(workTemp.get().getStartTime())
+                .endTime(workTemp.get().getEndTime())
+                .build();
+
+        try {
+            scheduleRepository.save(work);
+
+            Optional<String> codeLabel = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue("schedule_category",String.valueOf(work.getCategory()));
+
+            if(codeLabel.isEmpty()) throw new RuntimeException("Code Label is Empty");
+
+            scheduleTempRepository.deleteById(workTemp.get().getId());
+
+            ScheduleResponseDto scheduleResponseDto = ScheduleResponseDto.builder()
+                    .offScheduleId(work.getId())
+                    .nurseId(work.getNurse().getId())
+                    .codeLabel(codeLabel.get())
+                    .content(work.getContent())
+                    .startTime(work.getStartTime())
+                    .endTime(work.getEndTime())
+                    .updatedAt(workTemp.get().getUpdatedAt())
+                    .build();
+
+            return scheduleResponseDto;
+
+        } catch (Exception e) {
+            throw new RuntimeException("work accept error");
+        }
+
     }
 }

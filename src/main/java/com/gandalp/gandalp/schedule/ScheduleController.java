@@ -2,19 +2,20 @@ package com.gandalp.gandalp.schedule;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.gandalp.gandalp.schedule.domain.dto.*;
+import com.gandalp.gandalp.schedule.domain.entity.Schedule;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.entity.Status;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleRequestDto;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleResponseDto;
-import com.gandalp.gandalp.schedule.domain.dto.OffScheduleTempResponseDto;
-import com.gandalp.gandalp.schedule.domain.dto.StaticRequestDto;
-import com.gandalp.gandalp.schedule.domain.dto.StaticsResponseDto;
-import com.gandalp.gandalp.schedule.domain.dto.SurgeryScheduleResponseDto;
 import com.gandalp.gandalp.schedule.domain.entity.SelectOption;
 import com.gandalp.gandalp.schedule.domain.service.NurseStaticsService;
 import com.gandalp.gandalp.schedule.domain.service.ScheduleService;
@@ -52,7 +53,7 @@ public class ScheduleController {
     @DeleteMapping("/off/temp/{schedule-temp-id}")
     public ResponseEntity<?> deleteOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
         try {
-            OffScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOffScheduleTemp(scheduleTempId);
+            ScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOffScheduleTemp(scheduleTempId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -61,34 +62,26 @@ public class ScheduleController {
 
     @Operation(summary = "전체 오프 조회")
     @GetMapping("/off/temp")
-    public ResponseEntity<?> getAllOffScheduleTemp() {
+    public ResponseEntity<?> getAllOffScheduleTemp(
+            @PageableDefault(size = 10, page = 0, sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
         System.out.println("전체 오프 조회");
         try {
-            List<OffScheduleTempResponseDto> list = scheduleService.getAllOffScheduleTemp();
+            Page<OffScheduleTempResponseDto> list = scheduleService.getAllOffScheduleTemp(pageable);
 
-            // 페이징 없으면 hasMore=false 고정
-            Map<String, Object> response = Map.of(
-                    "items", list,
-                    "hasMore", false
-            );
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(list);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @GetMapping("/off/temp/nurse")
-    public ResponseEntity<?> getOffSchedule(String email) {
-        List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
+    public ResponseEntity<?> getOffSchedule(String email,
+                                            @PageableDefault(size = 10, page = 0, sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
         try {
-            offScheduleTempResponseDtos = scheduleService.getOffScheduleTemp(email);
+            offScheduleTempResponseDtos = scheduleService.getOffScheduleTemp(email, pageable);
 
-            // 페이징 없으면 hasMore=false 고정
-            Map<String, Object> response = Map.of(
-                    "items", offScheduleTempResponseDtos,
-                    "hasMore", false
-            );
             return ResponseEntity.ok().body(offScheduleTempResponseDtos);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -97,10 +90,10 @@ public class ScheduleController {
     }
 
     @GetMapping("/off/temp/nurse/name")
-    public ResponseEntity<?> getOffScheduleByName(String name) {
-        List<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
+    public ResponseEntity<?> getOffScheduleByName(String name, @PageableDefault(size = 10, page = 0, sort = "startTime", direction = Sort.Direction.ASC) Pageable pageable) {
+        Page<OffScheduleTempResponseDto> offScheduleTempResponseDtos = null;
         try {
-            offScheduleTempResponseDtos = scheduleService.getOffScheduleTempByName(name);
+            offScheduleTempResponseDtos = scheduleService.getOffScheduleTempByName(name, pageable);
             // 페이징 없으면 hasMore=false 고정
             Map<String, Object> response = Map.of(
                     "items", offScheduleTempResponseDtos,
@@ -121,7 +114,7 @@ public class ScheduleController {
     @PreAuthorize("hasRole('HEAD_NURSE')")
     public ResponseEntity<?> acceptOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
         try {
-            OffScheduleResponseDto offScheduleResponseDto = scheduleService.acceptOff(scheduleTempId);
+            ScheduleResponseDto offScheduleResponseDto = scheduleService.acceptOff(scheduleTempId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
         }
         catch (Exception e) {
@@ -134,7 +127,7 @@ public class ScheduleController {
     @PreAuthorize("hasRole('HEAD_NURSE')")
     public ResponseEntity<?> rejectOffSchedule(@PathVariable("schedule-temp-id") Long scheduleTempId) {
         try {
-            OffScheduleResponseDto offScheduleResponseDto = scheduleService.rejectOff(scheduleTempId);
+            ScheduleResponseDto offScheduleResponseDto = scheduleService.rejectOff(scheduleTempId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
         }
         catch (Exception e) {
@@ -184,6 +177,7 @@ public class ScheduleController {
         summary = "간호사 통합 통계 조회",
         description = "과에 소속된 간호사들의 근무/오프/수술 통계를 통합 조회합니다. status 값으로 필터링할 수 있습니다."
     )
+
     @PostMapping("/status/working")
     public ResponseEntity<?> getAllNurseWorking(@Valid @RequestBody StaticRequestDto staticRequestDto){
 
@@ -224,7 +218,7 @@ public class ScheduleController {
     @DeleteMapping("/off/{schedule-id}")
     public ResponseEntity<?> deleteOff(@PathVariable("schedule-id") Long scheduleId){
         try {
-            OffScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOff(scheduleId);
+            ScheduleResponseDto offScheduleResponseDto = scheduleService.deleteOff(scheduleId);
             return ResponseEntity.ok().body(offScheduleResponseDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -236,7 +230,7 @@ public class ScheduleController {
     @GetMapping("/off")
     public ResponseEntity<?> getOffScheduleByEmail(String email) {
         try {
-            List<OffScheduleResponseDto> offScheduleResponseDtos = scheduleService.getOffSchedules(email);
+            List<ScheduleResponseDto> offScheduleResponseDtos = scheduleService.getOffSchedules(email);
             return ResponseEntity.ok().body(offScheduleResponseDtos);
         }
         catch (Exception e) {
@@ -244,4 +238,64 @@ public class ScheduleController {
         }
 
     }
+
+    //임시 근무 조회
+    @Operation(summary = "임시 근무 조회")
+    @GetMapping("/temp")
+    @PreAuthorize("hasRole('HEAD_NURSE')")
+    public ResponseEntity<?> showAllWorkTemp() {
+        try {
+            List<WorkTempResponseDto> workTempResponseDtos = scheduleService.getAllOffWorkTemp();
+            return ResponseEntity.ok().body(workTempResponseDtos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "임시 근무 수정")
+    @PutMapping("/temp")
+    @PreAuthorize("hasRole('HEAD_NURSE')")
+    public ResponseEntity<?> updateWorkTemp(@RequestBody WorkTempRequestUpdateDto workTempRequestUpdateDto){
+        try {
+            WorkTempResponseDto workTempResponseDto = scheduleService.updateWorkTemp(workTempRequestUpdateDto);
+            return ResponseEntity.ok().body(workTempResponseDto);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "임시 근무 삭제")
+    @DeleteMapping("/temp/{work-temp-id}")
+    @PreAuthorize("hasRole('HEAD_NURSE')")
+    public ResponseEntity<?> deleteWorkTemp(@PathVariable("work-temp-id") Long workTempId) {
+        try {
+            scheduleService.deleteWorkTemp(workTempId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Operation(summary = "근무 조회")
+    @GetMapping
+    public ResponseEntity<?> showWork() {
+        try {
+            List<WorkScheduleResponseDto> schedules = scheduleService.showWork();
+            return ResponseEntity.ok().body(schedules);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @Operation(summary = "근무 승인")
+    @PostMapping("/accept-work/{work-schedule-id}")
+    public ResponseEntity<?> acceptWork(@PathVariable("work-schedule-id") Long workScheduleId) {
+        try {
+            ScheduleResponseDto workScheduleResponseDto = scheduleService.acceptWork(workScheduleId);
+            return ResponseEntity.ok().body(workScheduleResponseDto);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
