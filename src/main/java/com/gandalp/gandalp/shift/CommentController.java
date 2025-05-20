@@ -33,55 +33,66 @@ public class CommentController {
     // 댓글 C
     @Operation(summary = "댓글 등록", description = "댓글 등록")
     @PostMapping("/{board-id}")
-    public ResponseEntity<?> createComment(@RequestBody @Valid CommentCreateRequestDto commentCreateRequestDto) {
+    public ResponseEntity<?> createComment(
+            @PathVariable("board-id") Long boardId,
+            @RequestBody @Valid CommentCreateRequestDto commentCreateRequestDto) {
 
         try {
+            commentCreateRequestDto.setBoardId(boardId); // boardId를 DTO에 세팅
             CommentResponseDto commentResponseDto = commentService.createComment(commentCreateRequestDto);
             return ResponseEntity.ok().body(commentResponseDto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+
     }
 
-    // 댓글 R
-//    @Operation(summary = "조회 (게시글이랑 같이 조회되면 되는 거라 삭제 예정)", description = "특정 게시글에 대한 댓글 리스트 조회")
-//    @GetMapping("/{board-id}")
-////    public ResponseEntity<List<CommentResponseDto>> findCommentsByBoardId(@PathVariable ("board-id") Long boardId) {
-////        List<CommentResponseDto> comments = commentService.findByBoardId(boardId);
-////        return ResponseEntity.ok(comments);
+//    @PostMapping("/{board-id}")
+//    public ResponseEntity<?> createComment(@RequestBody @Valid CommentCreateRequestDto commentCreateRequestDto) {
 //
-//    public ResponseEntity<?> findCommentsByBoardId(@PathVariable ("board-id") Long boardId) {
 //        try {
-//            List<CommentResponseDto> comments = commentService.findByBoardId(boardId);
-//            return ResponseEntity.ok().body(comments);
+//            CommentResponseDto commentResponseDto = commentService.createComment(commentCreateRequestDto);
+//            return ResponseEntity.ok().body(commentResponseDto);
 //        } catch (Exception e) {
 //            return ResponseEntity.badRequest().body(e.getMessage());
 //        }
 //    }
 
+
     //  댓글 U
     @Operation(summary = "댓글 수정", description = "댓글 수정")
     @PutMapping("/{comment-id}")
-
-    public ResponseEntity<?> updateComment(@RequestBody @Valid CommentUpdateDto commentUpdateDto){
-        try {
-        CommentResponseDto commentResponseDto = commentService.updateComment(commentUpdateDto);
-        return ResponseEntity.ok().body(commentResponseDto);
-
-        } catch (Exception e) {
+    public ResponseEntity<?> updateComment(
+            @PathVariable("comment-id") Long commentId,
+            @RequestBody @Valid CommentUpdateDto commentUpdateDto) {
+        try{commentUpdateDto.setCommentId(commentId); // commentId를 DTO에 세팅
+            CommentResponseDto commentResponseDto = commentService.updateComment(commentUpdateDto);
+            return ResponseEntity.ok().body(commentResponseDto);}
+        catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+
     }
+
+
+//    @PutMapping("/{comment-id}")
+//    public ResponseEntity<?> updateComment(@RequestBody @Valid CommentUpdateDto commentUpdateDto){
+//        try {
+//        CommentResponseDto commentResponseDto = commentService.updateComment(commentUpdateDto);
+//        return ResponseEntity.ok().body(commentResponseDto);
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//    }
 
     // 댓글 D
     @Operation(summary = "댓글 삭제", description = "댓글 삭제")
     @DeleteMapping("/{comment-id}")
-    public ResponseEntity<?> deleteComment(	@RequestParam Long memberId, @RequestParam Long boardId,
-                                                  @PathVariable("comment-id") Long commentId) {
+    public ResponseEntity<?> deleteComment(@PathVariable("comment-id") Long commentId) {
 
         try {
             commentService.deleteComment(commentId);
-
             return ResponseEntity.ok().body("댓글이 삭제되었습니다.");
 
         } catch (Exception e) {
@@ -89,4 +100,21 @@ public class CommentController {
         }
 
     }
+
+
+
+//    @DeleteMapping("/{comment-id}")
+//    public ResponseEntity<?> deleteComment(	@RequestParam Long memberId, @RequestParam Long boardId,
+//                                                  @PathVariable("comment-id") Long commentId) {
+//
+//        try {
+//            commentService.deleteComment(commentId);
+//
+//            return ResponseEntity.ok().body("댓글이 삭제되었습니다.");
+//
+//        } catch (Exception e) {
+//            return ResponseEntity.badRequest().body(e.getMessage());
+//        }
+//
+//    }
 }
