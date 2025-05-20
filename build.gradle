@@ -5,6 +5,7 @@ plugins {
 }
 
 ext {
+	querydslVersion = "5.0.0"
 	tanzuScgExtensionsVersion = "1.0.0"
 }
 

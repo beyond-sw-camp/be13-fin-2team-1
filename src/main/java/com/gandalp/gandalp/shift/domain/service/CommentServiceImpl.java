@@ -57,25 +57,41 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     public CommentResponseDto updateComment(CommentUpdateDto commentUpdateDto) {
-
-        Long memberId = commentUpdateDto.getMemberId();
-        Member member = memberRepository.findById(memberId).orElseThrow(
-                () -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다.")
-        );
-
-        Long boardId = commentUpdateDto.getBoardId();
-        Board board = shiftRepository.findById(boardId).orElseThrow(
-                () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
-        );
-
+        Member member = authService.getLoginMember(); // 로그인 사용자
         Long commentId = commentUpdateDto.getCommentId();
-        Comment comment = commentRepository.findById(commentId).orElseThrow(
-                () -> new IllegalArgumentException("댓글이 존재하지 않습니다.")
-        );
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
+
+        // 본인 댓글만 수정 가능
+        if (!comment.getMember().getId().equals(member.getId())) {
+            throw new IllegalArgumentException("본인 댓글만 수정할 수 있습니다.");
+        }
 
         comment.update(commentUpdateDto);
         return new CommentResponseDto(comment);
     }
+
+//    @Override
+//    public CommentResponseDto updateComment(CommentUpdateDto commentUpdateDto) {
+//
+//        Long memberId = commentUpdateDto.getMemberId();
+//        Member member = memberRepository.findById(memberId).orElseThrow(
+//                () -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다.")
+//        );
+//
+//        Long boardId = commentUpdateDto.getBoardId();
+//        Board board = shiftRepository.findById(boardId).orElseThrow(
+//                () -> new IllegalArgumentException("게시글이 존재하지 않습니다.")
+//        );
+//
+//        Long commentId = commentUpdateDto.getCommentId();
+//        Comment comment = commentRepository.findById(commentId).orElseThrow(
+//                () -> new IllegalArgumentException("댓글이 존재하지 않습니다.")
+//        );
+//
+//        comment.update(commentUpdateDto);
+//        return new CommentResponseDto(comment);
+//    }
 
 
     // 댓글 D

@@ -18,14 +18,7 @@ public class CommentUpdateDto {
     private Long boardId;
 
     @NotNull
-    private Long memberId;
-
-    @NotNull
     private String content;
 
-    @NotNull
-    private LocalDateTime updatedAt;
 
-    @NotNull
-    private String updatedBy;
 }
