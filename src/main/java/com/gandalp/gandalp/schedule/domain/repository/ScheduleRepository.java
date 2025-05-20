@@ -37,4 +37,8 @@ public interface ScheduleRepository extends JpaRepository<Schedule, Long>, Sched
 
     Optional<Schedule> findByNurseAndStartTimeAndCategory (Nurse nurse, LocalDateTime startTime, Category category);
 
+    @Query("SELECT s FROM Schedule s " +
+            "WHERE s.nurse.id = :nurseId")
+    List<Schedule> findByNurseId(@Param("nurseId") Long nurseId);
+
 }
