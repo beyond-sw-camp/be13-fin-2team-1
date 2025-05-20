@@ -5,11 +5,13 @@ import com.gandalp.gandalp.hospital.domain.entity.SortOption;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -37,39 +39,40 @@ public class HospitalRepositoryImpl implements HospitalRepositoryCustom {
             search.and(hospital.id.in(hospitalIds));
         }
 
-// 이후 keyword 필터 등 기존 로직 유지
+        // keyword가 null인 경우
         if (keyword != null && !keyword.isBlank()) {
             search.and(
                     hospital.name.containsIgnoreCase(keyword)
                             .or(hospital.address.containsIgnoreCase(keyword))
             );
         }
-        JPQLQuery<HospitalDto> query = queryFactory
+        List<HospitalDto> content = queryFactory
                 .select(Projections.constructor(HospitalDto.class,
                         hospital.id,
                         hospital.name,
                         hospital.address,
                         hospital.phoneNumber,
                         hospital.totalErCount,
-                        hospital.availableErCount
+                        hospital.availableErCount,
+                        hospital.latitude,
+                        hospital.longitude
                         ))
                 .from(hospital)
-                .where(search);
-
-        if(sortOption == SortOption.ER_COUNT){
-            query.orderBy(hospital.availableErCount.desc());
-        }
-
-        List<HospitalDto> results = query
+                .where(search)
+                .orderBy(sortOption == SortOption.ER_COUNT
+                        ? hospital.availableErCount.desc()
+                        : hospital.id.asc()  // 일단 기본으로 함
+                )
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        long count = queryFactory
+        JPAQuery<Long> countQuery = queryFactory
                 .select(hospital.count())
                 .from(hospital)
-                .where(search)
-                .fetchOne();
-        return new PageImpl<>(results, pageable, count);
+                .where(search);
+
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 }

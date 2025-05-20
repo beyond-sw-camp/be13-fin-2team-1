@@ -2,9 +2,10 @@ package com.gandalp.gandalp.schedule.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
+@Data
 @AllArgsConstructor
 @Builder
 public class StaticsUpdateDto {
