@@ -41,4 +41,13 @@ public class ShiftResponseDto {
         this.updatedAt = board.getUpdatedAt();
         this.comments = board.getComments().stream().map(CommentResponseDto::new).collect(Collectors.toList());
     }
+
+    public ShiftResponseDto(Long boardId, String boardStatusLabel, String content, LocalDateTime updatedAt) {
+        this.boardId = boardId;
+        this.boardStatusLabel = boardStatusLabel;
+        this.content = content;
+        this.updatedAt = updatedAt;
+    }
+
+
 }

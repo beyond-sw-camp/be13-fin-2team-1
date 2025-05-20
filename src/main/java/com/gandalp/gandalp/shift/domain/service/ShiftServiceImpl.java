@@ -5,8 +5,11 @@ import com.gandalp.gandalp.common.entity.CommonCode;
 import com.gandalp.gandalp.common.repository.CommonCodeRepository;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
+import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import com.gandalp.gandalp.member.domain.entity.Member;
+import com.gandalp.gandalp.member.domain.entity.Nurse;
 import com.gandalp.gandalp.member.domain.repository.MemberRepository;
+import com.gandalp.gandalp.member.domain.repository.NurseRepository;
 import com.gandalp.gandalp.schedule.domain.entity.Schedule;
 import com.gandalp.gandalp.schedule.domain.repository.ScheduleRepository;
 import com.gandalp.gandalp.shift.domain.dto.CommentResponseDto;
@@ -24,10 +27,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,13 +43,13 @@ import java.util.stream.Collectors;
 public class ShiftServiceImpl implements ShiftService {
 
     private final ShiftRepository shiftRepository;
-    private final MemberRepository memberRepository;
-    private final DepartmentRepository departmentRepository;
 
     private final CommonCodeRepository commonCodeRepository;
 
+    private final NurseRepository nurseRepository;
+    private final PasswordEncoder passwordEncoder;
+
     private final CommentRepository commentRepository;
-    private final ScheduleRepository scheduleRepository;
     private final AuthService authService;
 
 
@@ -54,21 +57,12 @@ public class ShiftServiceImpl implements ShiftService {
 //    @Override
 //    @Transactional
 //    public void submitComment(Long commentId) {
-//        // 1. 댓글 정보 조회
-//        Comment comment = commentRepository.findById(commentId)
-//                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 //
-//        // 2. 해당 댓글이 달린 게시글(Board) 조회
-//        Board board = comment.getBoard();
 //
-//        if (!"REQUESTED".equals(board.getBoardStatus())) {
-//            throw new IllegalStateException("이미 처리된 교대 요청입니다.");
-//        }
 //
-//        // 3. 게시글 상태 COMPLETED로 변경
-//        board.setBoardStatus("COMPLETED");
-//
-//        // 4. 일정(Schedule)에서 nurseId 서로 교환
+//    }
+
+    //        // 4. 일정(Schedule)에서 nurseId 서로 교환
 //        // 예시: 게시글의 일정과 댓글 작성자의 일정이 같은 날짜/시간대에 있다고 가정
 //        Long boardScheduleId = board.getScheduleId(); // 예시: Board에 scheduleId 필드가 있다고 가정
 //        Long commentScheduleId = comment.getScheduleId(); // 예시: Comment에 scheduleId 필드가 있다고 가정
@@ -93,7 +87,6 @@ public class ShiftServiceImpl implements ShiftService {
 //        // 필요하다면 댓글에 "채택됨" 표시 등 추가
 //        comment.setSelected(true);
 //        commentRepository.save(comment);
-//    }
 
     // 공통 코드 변환 메서드
     private ShiftResponseDto toDto(Board board) {
@@ -107,6 +100,9 @@ public class ShiftServiceImpl implements ShiftService {
         dto.setBoardStatusLabel(label);
         return dto;
     }
+
+    //
+    
 
     // 교대 요청 글 C
     @Override
@@ -156,8 +152,6 @@ public class ShiftServiceImpl implements ShiftService {
 
 
     // 교대 요청 글 기본 조회
-
-
     @Override
     public Page<ShiftResponseDto> getAll(Pageable pageable) {
         // 1. 로그인 사용자 조회

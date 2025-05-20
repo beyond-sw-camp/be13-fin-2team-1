@@ -6,6 +6,7 @@ import com.gandalp.gandalp.shift.domain.dto.ShiftResponseDto;
 import com.gandalp.gandalp.shift.domain.entity.SearchOption;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import jakarta.persistence.EntityManager;
 import org.springframework.data.domain.Page;
@@ -75,15 +76,17 @@ public Page<ShiftResponseDto> getAll(Pageable pageable) {
                 .select(Projections.constructor(
                         ShiftResponseDto.class,
                         board.id,
+                        Expressions.stringTemplate("COALESCE({0}, {1})", commonCode.codeLabel, "요청 대기중"),
                         board.content,
-                        board.boardStatus,
-                        commonCode.codeLabel,
-                        board.createdAt
+                        board.updatedAt
                 ))
+
                 .from(board)
                 .leftJoin(commonCode)
                 .on(commonCode.codeGroup.eq("board_status")
-                        .and(commonCode.codeValue.eq(String.valueOf(board.boardStatus))))
+                        .and(commonCode.codeValue.eq(board.boardStatus.stringValue()))
+                )
+
                 .where(builder)
                 .orderBy(board.createdAt.desc())
                 .offset(pageable.getOffset())
@@ -98,8 +101,5 @@ public Page<ShiftResponseDto> getAll(Pageable pageable) {
 
         return new PageImpl<>(content, pageable, count);
     }
-
-
-
 
 }
