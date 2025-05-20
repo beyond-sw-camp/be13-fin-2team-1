@@ -3,6 +3,7 @@ package com.gandalp.gandalp.schedule.domain.entity;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 
+import com.gandalp.gandalp.calender.domain.dto.PersonalScheduleUpdateRequestDto;
 import org.springframework.cglib.core.Local;
 
 import com.gandalp.gandalp.common.entity.BaseEntity;
@@ -59,5 +60,9 @@ public class Schedule extends BaseEntity {
 		this.endTime = endTime;
 	}
 
-	
+	public void updateSchedule(PersonalScheduleUpdateRequestDto personalScheduleUpdateRequestDto) {
+		this.content = personalScheduleUpdateRequestDto.getContent();
+		this.startTime = personalScheduleUpdateRequestDto.getStartTime();
+		this.endTime = personalScheduleUpdateRequestDto.getEndTime();
+	}
 }
