@@ -1,9 +1,12 @@
 package com.gandalp.gandalp.hospital;
 
 import com.gandalp.gandalp.hospital.domain.dto.ErCountUpdateDto;
+import com.gandalp.gandalp.hospital.domain.dto.ErStatisticsRequestDto;
+import com.gandalp.gandalp.hospital.domain.dto.ErStatisticsResponseDto;
 import com.gandalp.gandalp.hospital.domain.dto.HospitalDto;
 import com.gandalp.gandalp.hospital.domain.dto.HospitalErResponseDto;
 import com.gandalp.gandalp.hospital.domain.entity.SortOption;
+import com.gandalp.gandalp.hospital.domain.service.ErStatisticsService;
 import com.gandalp.gandalp.hospital.domain.service.GeoCodingService;
 import com.gandalp.gandalp.hospital.domain.service.HospitalService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/v1/hospitals")
@@ -29,8 +34,8 @@ public class HospitalController {
 
     private final HospitalService hospitalService;
 //    private final SimpMessagingTemplate messagingTemplate;
-
     private final GeoCodingService geoCodingService;
+    private final ErStatisticsService erStatisticsService;
 
     // 현재 위치에서 가까운 순으로 조회하려면  프론트에서 현재 위치를 보내줘야 함
     @Operation(summary = "응급실 병상 수용 정보 조회", description = "수용 가능한 병상 수 정보 거리 순으로 20개 조회")
@@ -73,7 +78,6 @@ public class HospitalController {
             // 변경된 병상 수를 Stomp 채널로 브로드캐스트 해줌 -> 새로고침하지 않아도 자동으로 확인 가능
 //            messagingTemplate.convertAndSend("/topic/er", resDto);
 
-
         }catch(Exception e) {
             ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -82,10 +86,28 @@ public class HospitalController {
         return ResponseEntity.ok(resDto);
     }
 
-    // 조회
 
-    // 검색
+    @Operation(summary = "응급실 병상 이용 시간대 분석", description = "응급실 병상 이용 시간대를 일, 월, 년 별로 조회할 수 있다.")
+    @PostMapping("/inspect")
+    public ResponseEntity<?> getErStatistics(
+            @RequestBody ErStatisticsRequestDto requestDto
+            ){
 
-    // 수용 정보
+        List<ErStatisticsResponseDto> statistics = null;
+
+        try{
+            statistics = erStatisticsService.getStatistics(requestDto);
+
+        }catch (Exception e){
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+
+        return ResponseEntity.ok(statistics);
+    }
+
+
+
 
 }

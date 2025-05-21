@@ -44,11 +44,12 @@ public class Hospital extends BaseEntity {
 	@Column(nullable = false, length = 20)
 	private String phoneNumber;
 
-	public void updateAvailableErCount(int count) {
+	public int updateAvailableErCount(int count) {
 		if( count < 0 )
 			throw new IllegalArgumentException("응급실 병상 수가 0개 미만일 수 없습니다. ");
 
 		this.availableErCount = count;
+		return count;
 	}
 
 	public void updateGeoCode(Double latitude, Double longitude) {

@@ -59,7 +59,18 @@ public class ScheduleRepositoryImpl implements ScheduleRepositoryCustom {
 		if (selectOption == null || selectOption == SelectOption.MONTH  ) {
 			// 전 달
 
-			nurseStatisticsRepository.findByNurseIdAndYearAndMonth(nurse.getId(), year, month).ifPresent(stats -> nurseStats(builder, stats));
+			Optional<NurseStatistics> opt = nurseStatisticsRepository
+					.findByNurseIdAndYearAndMonth(nurse.getId(), year, month);
+				if(opt.isPresent()) {
+
+					NurseStatistics stats = opt.get();
+					builder.dayCount(stats.getDayCount())
+							.eveningCount(stats.getEveningCount())
+							.nightCount(stats.getNightCount())
+							.offCount(stats.getOffCount())
+							.surgeryCount(stats.getSurgeryCount());
+				}
+
 
 			return builder.build();
 
