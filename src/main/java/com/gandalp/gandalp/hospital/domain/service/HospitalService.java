@@ -5,8 +5,10 @@ import com.gandalp.gandalp.hospital.domain.dto.ErCountUpdateDto;
 import com.gandalp.gandalp.hospital.domain.dto.GeoResponse;
 import com.gandalp.gandalp.hospital.domain.dto.HospitalDto;
 import com.gandalp.gandalp.hospital.domain.dto.HospitalErResponseDto;
+import com.gandalp.gandalp.hospital.domain.entity.ErStatistics;
 import com.gandalp.gandalp.hospital.domain.entity.Hospital;
 import com.gandalp.gandalp.hospital.domain.entity.SortOption;
+import com.gandalp.gandalp.hospital.domain.repository.ErStatisticsRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalGeoRedisRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -18,6 +20,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,9 +36,10 @@ public class HospitalService {
     private final RedisTemplate<String, String> redisTemplate;
     private final NaverGeoClient naverGeoClient;
     private final NaverDirectionClient naverDirectionClient;
-
+    private final ErStatisticsRepository erStatisticsRepository;
 
     private static final String GEO_KEY = "hospital:geo";
+    private final ErStatisticsService erStatisticsService;
 
     @Transactional
     public HospitalErResponseDto updateErCount(ErCountUpdateDto updateDto) {
@@ -44,7 +48,32 @@ public class HospitalService {
                 () -> new EntityNotFoundException("해당 병원은 존재하지 않습니다.")
         );
 
-        hospital.updateAvailableErCount(updateDto.getAvailableErCount());
+
+
+        int pastErCount = hospital.getAvailableErCount();
+        int nowErCount = hospital.updateAvailableErCount(updateDto.getAvailableErCount());
+
+        int diff = pastErCount - nowErCount;
+        if ( diff > 0 ) {
+
+            // 과거 ErCount 가 현재 ErCount 보다 크면, 응급실 입원 환자수 존재 -> ErStatistics 에 넣기
+
+            LocalDateTime now = LocalDateTime.now();
+            ErStatistics statistics = ErStatistics.builder()
+                                            .hospital(hospital)
+                                            .year(now.getYear())
+                                            .month(now.getMonthValue())
+                                            .day(now.getDayOfMonth())
+                                            .hour(now.getHour())
+                                            .patients(diff)
+                                            .build();
+
+            erStatisticsRepository.save(statistics);
+        }
+
+
+
+
 
         return new HospitalErResponseDto(hospital);
     }
