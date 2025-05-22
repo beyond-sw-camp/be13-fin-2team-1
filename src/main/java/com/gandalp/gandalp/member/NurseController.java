@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gandalp.gandalp.auth.model.service.AuthService;
+import com.gandalp.gandalp.config.websocket.WebSocketService;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.dto.NurseCurrentStatusDto;
 import com.gandalp.gandalp.member.domain.dto.NurseRequestDto;
@@ -43,8 +45,9 @@ public class NurseController {
 
     private final NurseService nurseService;
     private final HeadNurseService headNurseService;
-    private final ScheduleService scheduleService;
     private final AuthService authService;
+    private final SimpMessagingTemplate messagingTemplate;
+    private final WebSocketService webSocketService;
 
     // 간호사 생성
     @Operation(summary = "간호사 생성", description = "수간호사가 새로운 간호사를 생성합니다.")
@@ -181,6 +184,11 @@ public class NurseController {
 
         try {
             nurseStatus = nurseService.updateNurseStatus(request);
+
+            // 모든 사용자에게 변경된 전체 리스트를 push
+            List<NurseCurrentStatusDto> statusList = nurseService.getNurseStatus();
+            messagingTemplate.convertAndSend("/topic/nurse-status",statusList);
+
 
         }catch(Exception e){
             return ResponseEntity.badRequest().body(e.getMessage());

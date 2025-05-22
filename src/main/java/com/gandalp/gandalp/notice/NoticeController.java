@@ -73,13 +73,30 @@ public class NoticeController {
 
 		try {
 
-			noticeList = noticeService.getNoticeList();
+			noticeList = noticeService.getGeneralNoticeList();
 
 		}catch (Exception e){
 			return ResponseEntity.badRequest().body(e.getMessage());
 		}
 
 		return ResponseEntity.ok(noticeList);
+	}
+
+
+	@Operation(summary = "긴급 공지사항 조회", description = "모든 간호사들은 본인이 소속된 과의 긴급 공지사항을 조회할 수 있다.")
+	@GetMapping("/urgent")
+	public ResponseEntity<?> getUrgentNotices(){
+		List<NoticeResponseDto> urgentNoticeList = null;
+
+		try {
+
+			urgentNoticeList = noticeService.getUrgentNoticeList();
+
+		}catch (Exception e){
+			return ResponseEntity.badRequest().body(e.getMessage());
+		}
+
+		return ResponseEntity.ok(urgentNoticeList);
 	}
 
 

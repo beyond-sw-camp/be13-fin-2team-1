@@ -37,7 +37,7 @@ public class Notice extends BaseEntity {
 
 	@Column(nullable = false)
 	@Enumerated(value = EnumType.STRING)
-	private Category category;
+	private NoticeCategory category;
 
 	@Column(nullable = false)
 	private String content;
