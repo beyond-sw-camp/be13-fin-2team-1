@@ -8,5 +8,8 @@ import lombok.Data;
 @AllArgsConstructor
 @Builder
 public class NoticeResponseDto {
+	private Long noticeId;
+
+	private String codeLabel;
 	private String content;
 }

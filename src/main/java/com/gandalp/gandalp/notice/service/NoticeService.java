@@ -3,19 +3,21 @@ package com.gandalp.gandalp.notice.service;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.gandalp.gandalp.auth.model.service.AuthService;
+import com.gandalp.gandalp.common.repository.CommonCodeRepository;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.member.domain.entity.Member;
-import com.gandalp.gandalp.notice.dto.NoticeDto;
 import com.gandalp.gandalp.notice.dto.NoticeCreateResponseDto;
+import com.gandalp.gandalp.notice.dto.NoticeDto;
 import com.gandalp.gandalp.notice.dto.NoticeResponseDto;
-import com.gandalp.gandalp.notice.entity.Category;
 import com.gandalp.gandalp.notice.entity.Notice;
+import com.gandalp.gandalp.notice.entity.NoticeCategory;
 import com.gandalp.gandalp.notice.repository.NoticeRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -28,7 +30,7 @@ public class NoticeService {
 
 	private final AuthService authService;
 	private final NoticeRepository noticeRepository;
-
+	private final CommonCodeRepository commonCodeRepository;
 
 	@Transactional
 	public NoticeCreateResponseDto createNoticeByHead(NoticeDto createDto){
@@ -36,11 +38,10 @@ public class NoticeService {
 		Member loginMember = authService.getLoginMember();
 
 		Notice notice = Notice.builder()
-			.category(Category.URGENT)
+			.category(NoticeCategory.URGENT)
 			.content(createDto.getContent())
 			.department(loginMember.getDepartment())
 			.build();
-
 
 		noticeRepository.save(notice);
 
@@ -67,7 +68,8 @@ public class NoticeService {
 
 
 
-	public List<NoticeResponseDto> getNoticeList(){
+	public List<NoticeResponseDto> getGeneralNoticeList(){
+
 
 		// 1. 로그인 했는지 검증
 		Member loginMember = authService.getLoginMember();
@@ -75,21 +77,66 @@ public class NoticeService {
 		// 2. 로그인한 유저의 과 정보 가져오기
 		Department department = loginMember.getDepartment();
 
-			// 3. 오늘 날짜 정보 가져오기
+		// 3. 오늘 날짜 정보 가져오기
 		LocalDateTime now = LocalDateTime.now();
 		LocalDateTime start = now.minusDays(3);
 
-		// 4. (오늘 날짜 - 3)일치 공지사항을 가져오기
-		List<Notice> allList = noticeRepository.findAllByCreatedAtBetweenAndDepartment(start, now,department);
+		// 4. (오늘 날짜 - 3)일치 일반 공지사항을 가져오기
+		List<Notice> allList = noticeRepository.findAllByCategoryAndCreatedAtBetweenAndDepartment(NoticeCategory.GENERAL, start, now,department);
 
 
+		// 5. code label
 		return allList.stream()
 			.sorted(Comparator.comparing(Notice::getCategory))
-			.map(notice -> new NoticeResponseDto(notice.getContent()) )
+			.map(notice -> {
+				Optional<String> noticeCategory = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue(
+					"notice_category", String.valueOf(notice.getCategory()));
+
+				return NoticeResponseDto.builder()
+					.noticeId(notice.getId())
+					.codeLabel(noticeCategory.orElse("알 수 없음"))
+					.content(notice.getContent())
+					.build();
+
+			})
 			.toList();
 
 	}
 
+	public List<NoticeResponseDto> getUrgentNoticeList(){
+
+
+		// 1. 로그인 했는지 검증
+		Member loginMember = authService.getLoginMember();
+
+		// 2. 로그인한 유저의 과 정보 가져오기
+		Department department = loginMember.getDepartment();
+
+		// 3. 오늘 날짜 정보 가져오기
+		LocalDateTime now = LocalDateTime.now();
+		LocalDateTime start = now.minusDays(3);
+
+		// 4. 긴급 공지사항 조회
+		List<Notice> allList = noticeRepository.findAllByCategory(NoticeCategory.URGENT);
+
+
+		// 5. code label 해서 반환
+		return allList.stream()
+			.sorted(Comparator.comparing(Notice::getCategory))
+			.map(notice -> {
+				Optional<String> noticeCategory = commonCodeRepository.findCodeLabelByCodeGroupAndCodeValue(
+					"notice_category", String.valueOf(notice.getCategory()));
+
+				return NoticeResponseDto.builder()
+					.noticeId(notice.getId())
+					.codeLabel(noticeCategory.orElse("알 수 없음"))
+					.content(notice.getContent())
+					.build();
+
+			})
+			.toList();
+
+	}
 
 	// 생성된지 3일된 일반 공지사항은 자동삭제된다.
 	@Transactional
@@ -99,7 +146,7 @@ public class NoticeService {
 		LocalDateTime limit = LocalDateTime.now().minusDays(3);
 
 		List<Notice> deleteList = noticeRepository.findAllByCategoryAndCreatedAtBefore(
-			Category.GENERAL, limit);
+			NoticeCategory.GENERAL, limit);
 
 		noticeRepository.deleteAll(deleteList);
 
