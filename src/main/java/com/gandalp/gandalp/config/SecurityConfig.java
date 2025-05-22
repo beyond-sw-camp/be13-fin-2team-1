@@ -1,14 +1,11 @@
 package com.gandalp.gandalp.config;
 
-import com.gandalp.gandalp.auth.jwt.JwtAuthenticationFilter;
-import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
-import com.gandalp.gandalp.common.CustomPermissionEvaluator;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,7 +16,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.util.List;
+import com.gandalp.gandalp.auth.jwt.JwtAuthenticationFilter;
+import com.gandalp.gandalp.auth.jwt.JwtTokenProvider;
+import com.gandalp.gandalp.common.CustomPermissionEvaluator;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity
@@ -31,6 +32,7 @@ public class SecurityConfig {
 
 
     private final JwtTokenProvider jwtTokenProvider;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {

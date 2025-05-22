@@ -25,8 +25,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,11 +94,13 @@ public class AuthServiceImpl implements AuthService {
         String accountId = dto.getAccountId();
         String password = dto.getPassword();
 
-        Member member = memberRepository.findByAccountId(accountId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 계정이 존재하지 않습니다."));
+        Member member = memberRepository.findByAccountId(accountId).orElseThrow(
+            () -> new UsernameNotFoundException("해당 계정이 존재하지 않습니다.")
+        );
+
 
         if (!passwordEncoder.matches(password, member.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+            throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(member.getAccountId(), member.getType().name());

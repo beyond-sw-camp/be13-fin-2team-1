@@ -21,6 +21,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -74,8 +76,12 @@ public class AuthController {
         try {
             tokenResponse = authService.login(dto, response);
 
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (UsernameNotFoundException e) {
+            return ResponseEntity.status(401).body(Map.of("error","존재하지 않는 계정입니다. <br> 아이디와 비밀번호를 정확히 입력해 주세요."));
+        } catch (BadCredentialsException e){
+            return ResponseEntity.status(401).body(Map.of("error","비밀번호가 틀렸습니다. <br> 아이디와 비밀번호를 정확히 입력해 주세요."));
+        }catch (Exception e){
+            return ResponseEntity.status(500).body(Map.of("error","다시 입력해주세요."));
         }
 
         return ResponseEntity.ok(createSuccessResponse("로그인 성공", tokenResponse));
