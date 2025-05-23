@@ -4,6 +4,7 @@ import com.gandalp.gandalp.common.entity.CommonCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface CommonCodeRepository extends JpaRepository<CommonCode,Long> {
@@ -12,4 +13,6 @@ public interface CommonCodeRepository extends JpaRepository<CommonCode,Long> {
 
     Optional<CommonCode> findByCodeGroupAndCodeValue(String codeGroup, String codeValue);
 
+
+    List<CommonCode> findAllByCodeGroup(String codeGroup );
 }

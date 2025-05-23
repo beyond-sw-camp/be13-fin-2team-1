@@ -22,3 +22,10 @@ INSERT INTO member (
 ) VALUES (
              1, 1, 'nurse', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'NURSE',
              NOW(), NOW(), 'admin', 'admin');
+
+INSERT INTO member (
+    `hospital-id`, `department-id`, `account_id`, `password`, `type`,
+    `created_at`, `updated_at`, `created_by`, `updated_by`
+) VALUES (
+             null, null, 'paramedic', '$2y$04$uVaWlH5kKz9Tygw0VHrkNeHpimT90ESp8jnIjWnRSYK/Zx4kbVFTG', 'PARAMEDIC',
+             NOW(), NOW(), 'admin', 'admin');

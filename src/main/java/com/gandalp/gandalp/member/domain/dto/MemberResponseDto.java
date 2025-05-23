@@ -23,9 +23,9 @@ public class MemberResponseDto {
 
     private String accountId;
 
-    private Type type;
+    private String codeLabel;
 
-    public MemberResponseDto(Member member){
+    public MemberResponseDto(Member member, String codeLabel){
         this.id = member.getId();
         this.hospitalName = member.getHospital() != null
                 ? member.getHospital().getName()
@@ -34,7 +34,7 @@ public class MemberResponseDto {
                 ? member.getDepartment().getName()
                 : null;
         this.accountId = member.getAccountId();
-        this.type = member.getType();
+        this.codeLabel = codeLabel;
     }
 
 }

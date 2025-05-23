@@ -1,6 +1,7 @@
 package com.gandalp.gandalp.member.domain.repository;
 
 import com.gandalp.gandalp.member.domain.dto.MemberResponseDto;
+import com.gandalp.gandalp.member.domain.entity.Member;
 import com.gandalp.gandalp.member.domain.entity.MemberSearchOption;
 import com.gandalp.gandalp.member.domain.entity.Type;
 import com.querydsl.core.types.Projections;
@@ -60,7 +61,7 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
 
 
     @Override
-    public Page<MemberResponseDto> searchMembers(String keyword, Type type, MemberSearchOption option, Pageable pageable){
+    public Page<Member> searchMembers(String keyword, Type type, MemberSearchOption option, Pageable pageable){
 
         // 검색 조건
         BooleanExpression typePredicate = (type != null)
@@ -69,18 +70,11 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
 
         BooleanExpression searchPredicate = searchOptions(keyword, option);
 
-        List<MemberResponseDto> content = queryFactory
+        List<Member> content = queryFactory
 
-                .select(Projections.constructor(MemberResponseDto.class,
-                        member.id,
-                        hospital.name,
-                        department.name,
-                        member.accountId,
-                        member.type
-                ))
-                .from(member)
-                .leftJoin(member.hospital, hospital)
-                .leftJoin(member.department, department)
+                .selectFrom(member)
+                .leftJoin(member.hospital, hospital).fetchJoin()
+                .leftJoin(member.department, department).fetchJoin()
                 .where(
                         typePredicate,
                         searchPredicate
@@ -93,8 +87,6 @@ public class MemberRepositoryImpl implements MemberRepositoryCustom{
         JPAQuery<Long> totalCount =queryFactory
                 .select(member.count())
                 .from(member)
-                .leftJoin(member.hospital, hospital)
-                .leftJoin(member.department, department)
                 .where(
                         typePredicate,
                         searchPredicate

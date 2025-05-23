@@ -28,8 +28,9 @@ public class HospitalDto {
         this.phoneNumber      = hospital.getPhoneNumber();
         this.totalErCount     = hospital.getTotalErCount();
         this.availableErCount = hospital.getAvailableErCount();
-        this.latitude         = hospital.getLatitude();
-        this.longitude        = hospital.getLongitude();
+        this.latitude = hospital.getLatitude() != null ? hospital.getLatitude() : 0.0;
+        this.longitude = hospital.getLongitude() != null ? hospital.getLongitude() : 0.0;
+
     }
 }
 
