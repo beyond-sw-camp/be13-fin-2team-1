@@ -11,12 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class HospitalErResponseDto {
-
+    private Long id;
     private String name;
     private int totalErCount;
     private int availableErCount;
 
     public HospitalErResponseDto(Hospital hospital){
+        this.id = hospital.getId();
         this.name = hospital.getName();
         this.totalErCount = hospital.getTotalErCount();
         this.availableErCount = hospital.getAvailableErCount();

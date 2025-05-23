@@ -16,9 +16,9 @@ INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value)
 -- nurse
 INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value) VALUES
 -- working_status 그룹
-(1, 'Y', 'working_status', '수술중', 'IN_SURGERY'),
+(1, 'Y', 'working_status', '수술 중', 'IN_SURGERY'),
 (2, 'Y', 'working_status', '오프', 'OFF'),
-(3, 'Y', 'working_status', '근무중', 'ON');
+(3, 'Y', 'working_status', '근무 중', 'ON');
 
 -- schedule
 INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value) VALUES
@@ -42,3 +42,16 @@ INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value)
 -- room_status 그룹
 (1, 'Y', 'room_status', '비어있음', 'EMPTY'),
 (2, 'Y', 'room_status', '사용중', 'USING');
+
+-- notice
+INSERT INTO common_code (sort_order, use_yn, code_group, code_label, code_value) VALUES
+-- notice_category
+(1, 'Y', 'notice_category', '긴급 공지사항', 'URGENT'),
+(2, 'Y', 'notice_category', '일반 공지사항', 'GENERAL');
+
+
+
+
+
+
+

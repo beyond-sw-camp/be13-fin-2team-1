@@ -16,12 +16,12 @@ public class NurseCurrentStatusDto {
 
 	private Long id;
 	private String name;
-	private Status workingStatus;
+	private String codeLabel;
 
 
 	public NurseCurrentStatusDto(Nurse nurse){
 		this.id = nurse.getId();
 		this.name = nurse.getName();
-		this.workingStatus = nurse.getWorkingStatus();
+		this.codeLabel = nurse.getWorkingStatus().toString();
 	}
 }

@@ -2,6 +2,8 @@ package com.gandalp.gandalp.member.domain.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.gandalp.gandalp.auth.model.dto.CustomUserDetails;
 import com.gandalp.gandalp.auth.model.service.AuthService;
+import com.gandalp.gandalp.common.entity.CommonCode;
+import com.gandalp.gandalp.common.repository.CommonCodeRepository;
 import com.gandalp.gandalp.hospital.domain.entity.Department;
 import com.gandalp.gandalp.hospital.domain.repository.DepartmentRepository;
 import com.gandalp.gandalp.member.domain.dto.NurseCurrentStatusDto;
@@ -45,6 +49,7 @@ public class NurseService {
 	private final SurgeryScheduleRepository surgeryScheduleRepository;
 	private final AuthService authService;
 	private final PasswordEncoder passwordEncoder;
+	private final CommonCodeRepository commonCodeRepository;
 
 	// 해당 과의 모든 간호사 조회 (페이징 처리 X)
 	public List<NurseStatusResponseDto> getSimpleNurseList(Department department) {
@@ -64,46 +69,57 @@ public class NurseService {
 		// 1. 로그인한 멤버 있는지 검증
 		Member loginMember = authService.getLoginMember();
 
-
+		// 2. 로그인한 사람의 부서 정보 가져오기
 		Department dept = loginMember.getDepartment();
 
+		// 3. 해당 부서의 간호사 리스트 가져오기
+		List<Nurse> nurses = nurseRepository.findByDepartment(dept);
 
-		Department department = departmentRepository.findById(dept.getId()).orElseThrow(
-			() -> new EntityNotFoundException("해당하는 과가 존재하지 않습니다.")
-		);
-
-		List<Nurse> nurses = nurseRepository.findByDepartment(department);
-
+		// 4. 간호사의 현재상태 codeLabel 을 Map 형태로 가져오기
+		Map<String, String> workingStatus = commonCodeRepository.findAllByCodeGroup("working_status")
+																.stream()
+																.collect(
+																	Collectors.toMap(
+																		CommonCode::getCodeValue,
+																		CommonCode::getCodeLabel
+																	));
 
 		return nurses.stream()
-			.map(nurse -> new NurseCurrentStatusDto(nurse.getId(), nurse.getName(), nurse.getWorkingStatus() ))
-			.toList();
+			.map(nurse -> {
+				String codeValue = nurse.getWorkingStatus().name();
+				String codeLabel = workingStatus.getOrDefault(codeValue, codeValue);
+
+				return NurseCurrentStatusDto.builder()
+					.id(nurse.getId())
+					.name(nurse.getName())
+					.codeLabel(codeLabel)
+					.build();
+
+			}).toList();
 	}
 
 	// 간호사들 현재 상태 수정
 	@Transactional
-	public NurseCurrentStatusDto updateNurseStatus(NurseStatusUpdateDto request ){
+	public NurseCurrentStatusDto updateNurseStatus(NurseStatusUpdateDto request){
 
 		// 1. 로그인했는지 검증
 		authService.getLoginMember();
 
-		log.info("login 완료");
-		log.info("request = "+ request.toString());
-		// 2. request 엣서의 long id 와 그 사람의 비밀번호 맞는지 검증
+		// 2. request 에서의 long id 와 그 사람의 비밀번호 맞는지 검증
 		Nurse nurse = nurseRepository.findById(request.getNurseId()).orElseThrow(
 			() -> new IllegalArgumentException("해당 간호사가 존재하지 않습니다.")
 		);
 
-		log.info(nurse.getName());
 
 		if(!passwordEncoder.matches(request.getPassword(), nurse.getPassword())){
 			new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
 		}
 
-		log.info(nurse.getPassword());
+
 		// 3. 근무 상태 수정
 
-		log.info("nurse "+ nurse.toString());
+
+
 		Status workingStatus = request.getWorkingStatus();
 
 		nurse.updateWorkingStatus(workingStatus);

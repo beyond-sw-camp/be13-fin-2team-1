@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.member;
 
+import com.gandalp.gandalp.member.domain.dto.MemberInfoDto;
 import com.gandalp.gandalp.member.domain.dto.MemberResponseDto;
 import com.gandalp.gandalp.member.domain.dto.MemberUpdateDto;
 import com.gandalp.gandalp.member.domain.entity.MemberSearchOption;
@@ -90,4 +91,22 @@ public class MemberController {
         return ResponseEntity.ok("회원 삭제 완료");
     }
 
+
+    @Operation(summary = "내 정보 조회", description = "모든 사용자가 본인의 병원과 과를 조회할 수 있습니다.")
+    @GetMapping("/myInfo")
+    public ResponseEntity<?> getMyInfo(){
+
+        MemberInfoDto dto = null;
+
+        try {
+
+            dto = memberService.getMyInfo();
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+
+        return ResponseEntity.ok(dto);
+    }
 }

@@ -67,7 +67,7 @@ public class NoticeController {
 
 
 	@Operation(summary = "공지사항 조회", description = "모든 간호사들은 본인이 소속된 과의 3일치 공지사항을 조회할 수 있다.")
-	@GetMapping
+	@GetMapping("/general")
 	public ResponseEntity<?> getAllNotices(){
 		List<NoticeResponseDto> noticeList = null;
 
