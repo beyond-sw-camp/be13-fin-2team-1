@@ -9,6 +9,7 @@ import com.gandalp.gandalp.hospital.domain.entity.SortOption;
 import com.gandalp.gandalp.hospital.domain.service.ErStatisticsService;
 import com.gandalp.gandalp.hospital.domain.service.GeoCodingService;
 import com.gandalp.gandalp.hospital.domain.service.HospitalService;
+import com.gandalp.gandalp.member.domain.dto.NurseResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +40,7 @@ public class HospitalController {
 
     // 현재 위치에서 가까운 순으로 조회하려면  프론트에서 현재 위치를 보내줘야 함
     @Operation(summary = "응급실 병상 수용 정보 조회", description = "수용 가능한 병상 수 정보 거리 순으로 20개 조회")
-    @GetMapping
+    @PostMapping("/search")
     public ResponseEntity<?> getHospitals(
             @RequestParam double lat,
             @RequestParam double lon, // 현재 위치
@@ -61,6 +62,24 @@ public class HospitalController {
         return ResponseEntity.ok(hospitalList);
     }
 
+    // 병원 정보 단건 조회
+    @Operation(summary = "로그인한 간호사의 병원 정보 조회", description = "간호사가 자신의 병원 정보를 조회할 수 있다.")
+    @GetMapping("/data")
+    @PreAuthorize("hasRole('NURSE')")
+    public ResponseEntity<?> getOneHospital(){
+
+        HospitalDto responseDto = null;
+
+        try{
+             responseDto = hospitalService.getOneHospital();
+
+        }catch (Exception e){
+
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+
+        return ResponseEntity.ok(responseDto);
+    }
 
     // 응급실 가용 병상 수 수정
     @Operation(summary = "응급실 가용 병상 수 수정", description = "응급실 가용 병상 수를 간호사가 직접 수정할 수 있다.")

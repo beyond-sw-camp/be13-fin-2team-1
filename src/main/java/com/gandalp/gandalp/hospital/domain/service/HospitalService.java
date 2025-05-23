@@ -1,5 +1,6 @@
 package com.gandalp.gandalp.hospital.domain.service;
 
+import com.gandalp.gandalp.auth.model.service.AuthService;
 import com.gandalp.gandalp.hospital.domain.dto.DestinationDto;
 import com.gandalp.gandalp.hospital.domain.dto.ErCountUpdateDto;
 import com.gandalp.gandalp.hospital.domain.dto.GeoResponse;
@@ -11,6 +12,8 @@ import com.gandalp.gandalp.hospital.domain.entity.SortOption;
 import com.gandalp.gandalp.hospital.domain.repository.ErStatisticsRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalGeoRedisRepository;
 import com.gandalp.gandalp.hospital.domain.repository.HospitalRepository;
+import com.gandalp.gandalp.member.domain.entity.Member;
+import com.gandalp.gandalp.member.domain.entity.Nurse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,14 +43,40 @@ public class HospitalService {
 
     private static final String GEO_KEY = "hospital:geo";
     private final ErStatisticsService erStatisticsService;
+    private final AuthService authService;
+
+
+
+    // 병원 단 건 조회
+    public HospitalDto getOneHospital( ) {
+
+        // 1. 로그인 했는지 검증
+        Member member = authService.getLoginMember();
+
+        // 2. 로그인 한 사람의 병원 가져오기
+        Long hospitalId = member.getHospital().getId();
+
+        Hospital hospital = hospitalRepository.findById(hospitalId).orElseThrow(
+                () -> new EntityNotFoundException("해당하는 병원이 존재하지 않습니다.")
+        );
+
+
+        return new HospitalDto(hospital);
+    }
 
     @Transactional
     public HospitalErResponseDto updateErCount(ErCountUpdateDto updateDto) {
 
-        Hospital hospital = hospitalRepository.findById(updateDto.getHospitalId()).orElseThrow(
-                () -> new EntityNotFoundException("해당 병원은 존재하지 않습니다.")
-        );
+        // 1. 로그인 했는지 검증
+        Member member = authService.getLoginMember();
 
+        // 2. 로그인 한 사람의 병원 가져오기
+        Hospital hospital = member.getHospital();
+
+//        Hospital hospital = hospitalRepository.findById(updateDto.getHospitalId()).orElseThrow(
+//                () -> new EntityNotFoundException("해당 병원은 존재하지 않습니다.")
+//        );
+//
 
 
         int pastErCount = hospital.getAvailableErCount();
@@ -100,46 +129,47 @@ public class HospitalService {
     public Page<HospitalDto> getNearestHospitals(double longitude, double latitude, String keyword, SortOption sortOption, Pageable pageable) {
 
 
-        // 1) Redis Geo에서 반경 제한 없이 최단거리 후보 ID(최대 50개 정도 여유 있게) 조회
-        List<Long> candidateIds = hospitalGeoRedisRepository.findNearbyHospitalIds(latitude, longitude, 50);
 
-        // 만약 후보가 없다면 빈 페이지 반환
-        if (candidateIds.isEmpty()) {
-            throw new EntityNotFoundException("주변 병원이 없습니다.");
-        }
+            // 1) Redis Geo에서 반경 제한 없이 최단거리 후보 ID(최대 50개 정도 여유 있게) 조회
+            List<Long> candidateIds = hospitalGeoRedisRepository.findNearbyHospitalIds(latitude, longitude, 50);
 
-
-        // 위에서 후보로 조회한 각 병원 ID에 대해 Redis에 저장한 위·경도 정보를 한꺼번에 조회
-        List<Point> points = hospitalGeoRedisRepository.findLocationsByIds(candidateIds);
+            // 만약 후보가 없다면 빈 페이지 반환
+            if (candidateIds.isEmpty()) {
+                throw new EntityNotFoundException("주변 병원이 없습니다.");
+            }
 
 
+            // 위에서 후보로 조회한 각 병원 ID에 대해 Redis에 저장한 위·경도 정보를 한꺼번에 조회
+            List<Point> points = hospitalGeoRedisRepository.findLocationsByIds(candidateIds);
 
-        // 3) Point 리스트를 네이버 Direction API용 DTO로 변환
-        List<DestinationDto> destinations = IntStream.range(0, candidateIds.size())
-                .mapToObj(i -> new DestinationDto(
-                        candidateIds.get(i),
-                        points.get(i).getY(),  // Point(x=lon, y=lat)
-                        points.get(i).getX()
-                ))
-                .collect(Collectors.toList());
-        // 반환 예시: { hospitalId1 → 1.2km, hospitalId2 → 0.9km, … }
 
-        // 4) 네이버 Direction API 호출 (service=15, batch size 최대 25)
-        Map<Long, Double> roadDistances = naverDirectionClient.getRoadDistances(
-                latitude, longitude,
-                destinations
-        );
+            // 3) Point 리스트를 네이버 Direction API용 DTO로 변환
+            List<DestinationDto> destinations = IntStream.range(0, candidateIds.size())
+                    .mapToObj(i -> new DestinationDto(
+                            candidateIds.get(i),
+                            points.get(i).getY(),  // Point(x=lon, y=lat)
+                            points.get(i).getX()
+                    ))
+                    .collect(Collectors.toList());
+            // 반환 예시: { hospitalId1 → 1.2km, hospitalId2 → 0.9km, … }
 
-        // 5) 거리 순 정렬 후 상위 20개 ID 뽑기
-        List<Long> top20Ids = roadDistances.entrySet().stream()
-                .sorted(Map.Entry.comparingByValue())
-                .limit(20)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
+            // 4) 네이버 Direction API 호출 (service=15, batch size 최대 25)
+            Map<Long, Double> roadDistances = naverDirectionClient.getRoadDistances(
+                    latitude, longitude,
+                    destinations
+            );
 
-        // 6) 최종적으로 거리/검색/정렬 조건을 적용해 JPA로 조회
+            // 5) 거리 순 정렬 후 상위 20개 ID 뽑기
+            List<Long> top20Ids = roadDistances.entrySet().stream()
+                    .sorted(Map.Entry.comparingByValue())
+                    .limit(20)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toList());
 
-        Page<HospitalDto> page = hospitalRepository.searchNearbyHospitals(top20Ids, keyword, sortOption, pageable);
+            // 6) 최종적으로 거리/검색/정렬 조건을 적용해 JPA로 조회
+
+            Page<HospitalDto> page = hospitalRepository.searchNearbyHospitals(top20Ids, keyword, sortOption, pageable);
+
 
 
         return page;
